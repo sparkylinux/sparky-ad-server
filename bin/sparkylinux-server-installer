@@ -3,14 +3,15 @@
 # sparky-server script lets you install and set up the server edition on the top of sparky
 # Copyright Paweł Pijanowski "pavroo" <pavroo@onet.eu> & Daniel Campos Ramos 2018/09/23
 # Under the GNU GPL3 License
-# Last update 2019/01/24 by pavroo
 #
 # script deps: apt, bash, coreutils, dpkg, dialog, gawk, grep, hostname, nano, iputils-ping, sed, sparky-backup-core, sparky-remsu
 #
-# iso pre-installed deps: base-files, iputils-ping, linux-headers-amd64|linux-headers-686-pae, linux-image-amd64|linux-image-686-pae, net-tools, openssh-server, postfix, sparky-apt-sb, sparky-backup-server
+# iso pre-installed deps: base-files, iputils-ping, linux-headers-amd64|linux-headers-686-pae, linux-image-amd64|linux-image-686-pae, net-tools, openssh-server, postfix, sparky-apt-sb, sparky-sb-server
 #
 # server iso name with a suffix: server or sbserver
 # client iso name with a suffix: client or client-light
+#
+# Last update 2019/01/25 by pavroo
 
 # checking to make sure the script is running with root privileges
 TESTROOT=`whoami`
@@ -60,9 +61,9 @@ ARCH64=`uname -m | grep x86_64`
 ARCH32=`uname -m | grep 686`
 
 if [ "$ARCH32" != "" ]; then
-	echo "32bit OS... OK"
+	echo "32bit OS... OK, starting SB module installation..."
 elif [ "$ARCH64" != "" ]; then
-	echo "64bit OS... OK"
+	echo "64bit OS... OK, starting SB module installation..."
 else
 	$DIALOG $TITLE"$TITLETEXT" $MSGBOX "$LOCAL110\n\n$LOCAL3" $HEIGHT $WIDTH
 	exit 1
@@ -96,6 +97,7 @@ else
 fi
 
 ### step 1: install pre-requisites ###
+# as the meta is pre-installed, the step 1 checks to make sure all deps are on the board
 
 if [ "$ARCH64" != "" ]; then
 
@@ -425,17 +427,17 @@ cat /TARGET/etc/resolv.conf >> /var/log/sparkylinux-installer.log
 ### end of step 5 ###
 
 ### step 6: samba ###
-
+### all must be done in installed system, not in chroot ###
 ## Stop all samba related services
-systemctl stop smbd
-systemctl stop nmbd
-systemctl stop winbind
-systemctl stop samba
-systemctl stop samba-ad-dc
-systemctl disable smbd.service
-systemctl disable nmbd.service
-systemctl disable winbind.service
-systemctl disable samba.service
+# systemctl stop smbd
+# systemctl stop nmbd
+# systemctl stop winbind
+# systemctl stop samba
+# systemctl stop samba-ad-dc
+# systemctl disable smbd.service
+# systemctl disable nmbd.service
+# systemctl disable winbind.service
+# systemctl disable samba.service
 
 # Backup actual Samba config file
 if [ -f /TARGET/etc/samba/smb.conf ]; then
