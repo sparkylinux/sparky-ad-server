@@ -15,12 +15,12 @@
 #  Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
 
 if [ "$1" = "uninstall" ]; then
-   	rm -f /usr/bin/sparkylinux-server-installer
-	rm -rf /usr/share/sparky/sparky-backup-server
+   	rm -f /usr/bin/sparky-ad-server
+	rm -rf /usr/share/sparky/sparky-ad-server
 else
-	cp bin/sparkylinux-server-installer /usr/bin/sparkylinux-server-installer
-	if [ ! -d /usr/share/sparky/sparky-backup-server ]; then
-		mkdir -p /usr/share/sparky/sparky-backup-server
+	cp bin/sparky-ad-server /usr/bin/
+	if [ ! -d /usr/share/sparky/sparky-ad-server ]; then
+		mkdir -p /usr/share/sparky/sparky-ad-server
 	fi
-	cp lang/* /usr/share/sparky/sparky-backup-server/
+	cp lang/* /usr/share/sparky/sparky-ad-server/
 fi

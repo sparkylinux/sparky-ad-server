@@ -1,17 +1,17 @@
 #!/bin/bash
 
-# sparky-server script lets you install and set up the server edition on the top of sparky
+# sparky-ad-server script lets you install and set up the server edition on the top of sparky
 # Copyright Paweł Pijanowski "pavroo" <pavroo@onet.eu> & Daniel Campos Ramos 2018/09/23
 # Under the GNU GPL3 License
 #
 # script deps: apt, bash, coreutils, dpkg, dialog, gawk, grep, hostname, nano, iputils-ping, sed, sparky-backup-core, sparky-remsu
 #
-# iso pre-installed deps: base-files, iputils-ping, linux-headers-amd64|linux-headers-686-pae, linux-image-amd64|linux-image-686-pae, net-tools, openssh-server, postfix, sparky-apt-sb, sparky-sb-server
+# iso pre-installed deps: base-files, iputils-ping, linux-headers-amd64|linux-headers-686-pae, linux-image-amd64|linux-image-686-pae, net-tools, openssh-server, postfix, sparky-apt-sb, sparky-ad-server
 #
 # server iso name with a suffix: server or sbserver
 # client iso name with a suffix: client or client-light
 #
-# Last update 2019/01/25 by pavroo
+# Last update 2019/01/27 by pavroo
 
 # checking to make sure the script is running with root privileges
 TESTROOT=`whoami`
@@ -26,7 +26,7 @@ if [ -f /tmp/sparky-advanced-installer ]; then
 fi
 
 # get default's locale file
-DEFLOCDIR="/usr/share/sparky/sparky-backup-server"
+DEFLOCDIR="/usr/share/sparky/sparky-ad-server"
 if [ "$DEFLANG" = "Brazilian" ]; then
 . $DEFLOCDIR/pt_BR
 echo "br" >> /TARGET/tmp/ntpconf
