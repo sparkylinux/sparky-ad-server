@@ -2,10 +2,14 @@
 # Copyright 2016 hiver <hiver@club-internet.fr> 2018/11/12
 # Sous licence GNU GPL v2
 # Dernière mise à jour 2018/11/12
+# Last update 2019/01/28 by pavroo
 LOCAL1="Le test de connexion à internet a échoué!"
 LOCAL2="L'installation en ligne de l'application ne peut être faite!"
 LOCAL3="Sortie à présent..."
 LOCAL4="La configuration du serveur est ciblé exclusivement sur la version stable de Debian/Sparky."
+LOCAL5="This is Sparky Active Directory post-install script which will install and set all you need to run AD Server."
+LOCAL6="Continue?"
+#
 LOCAL110="Ce paquet n'est pas disponible pour la version de votre système."
 LOCAL111="Voulez-vous installer le support pour un onduleur (UPS)?"
 LOCAL112="Voulez-vous vérifier les paramètres du réseau et/ou les configurer manuellement?"
@@ -33,3 +37,6 @@ LOCAL133="Le nom du répertoire partagé est vide, essayez à nouveau."
 LOCAL134="Voulez-vous partager un autre répertoire sur le serveur?\nLe prochain écran vous permettra de configurer le chemin du répertoire partagé. Tous les répertoires et sous-répertoire seront créés s'ils n'existent pas.\nN'utilisez pas le nom de l'administrateur Samba créé plus tôt ni d'un répertoire déjà partagé."
 LOCAL135="Entrer le nom du répertoire partagé. Si vous n'en entrez aucun, un sparkydir.XXXX sera utilisé par défaut."
 LOCAL136="Les paquets requis pour le serveur demandé n'ont pas été installés!"
+LOCAL137="Would you like to install and update Clamav antivirus? (recommended, but not required)"
+LOCAL138="Would you like to install netdata monitoring interface? (recommended but not required)"
+LOCAL139="Would you like to install webmin management interface? (recommended but not required)"

@@ -1,6 +1,6 @@
 Sparky AD Server
 
-This provides an installation script of AD Server edition, for the Sparky Advanced Installer.
+This provides an post-install script of Sparky AD Server edition.
 
 Copyright (C) 2018-2019 Paweł Pijanowski & Daniel Campos Ramos
 
@@ -29,18 +29,8 @@ grep
 hostname
 iputils-ping
 nano
-rsync
 sed
-sparky-backup-core
-sparky-remsu
-
-Conflicts:
---------------
-sparky-backup-server
-
-Replaces:
---------------
-sparky-backup-server
+sudo
 
 Install:
 -------------

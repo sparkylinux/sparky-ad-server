@@ -1,11 +1,14 @@
 # Polish localization file for Sparky AD Server.
 # Copyright 2018 Paweł "pavroo" Pijanowski <pavroo@onet.eu> 2018/10/28
 # Under the GNU GPL v2
-# Last update 2018/10/29 by pavroo
+# Last update 2019/01/28 by pavroo
 LOCAL1="Połączenie z internetem nieudane!"
 LOCAL2="Instalacja on-line zplikacji serwerowych może być przeprowadzona!"
 LOCAL3="Kończenie..."
 LOCAL4="Konfiguracja serwera jest przeznaczona tylko dla stabilnej linii Debian/Sparky."
+LOCAL5="To jest Sparky Active Directory skrypt poinstalacyjny, który zainstaluje i ustawi wszystko co potrzebujesz do uruchomienia serwera AD."
+LOCAL6="Kontynuować?"
+#
 LOCAL110="Ten pakiet nie jest dostępny dla Twojej wersji systemu."
 LOCAL111="Czy chcesz zainstalować wsparcie dla zasilaczy awaryjnych (UPS)?"
 LOCAL112="Czy chcesz sprawdzić ustawienia sieciowe i/lub skonfigurować je ręcznie?"
@@ -33,3 +36,6 @@ LOCAL133="Nazwa udostępnianego folderu jest pusta, spróbuj ponownie."
 LOCAL134="Czy chcesz udostępnieć kolejny folder na tym serwerze?\nW następnym oknie bedziesz mógł skonfigurować ścieżkę folder do udostępnienia. Udział zostanie utworzony, jeśli jeszcze nie istnieje.\nNIE używaj nazwy administratora samba, którą już utworzyłeś oraz nie nazwy foldery, który już udostępniłeś."
 LOCAL135="Wpisz nazwę folderu, który udostępniasz. Jeśli nie wpiszesz żadnej nazwy, zostanie użyta nazwa sparkydir.XXXX"
 LOCAL136="Wymagany zestaw pakietów o przeznaczeniu serwerowym NIE ZOSTAŁ zainstalowany!"
+LOCAL137="Czy chcesz zainstalować i zaktualizować program anywirusowy Clamav? (zalecane, lecz niewymagane)"
+LOCAL138="Czy chcesz zainstalować netdata do monitorowania interfejsu sieciowego? (zalecane, lecz niewymagane)"
+LOCAL139="Czy chcesz zainstalować webmin do zarządzania serwerem? (zalecane, lecz niewymagane)"

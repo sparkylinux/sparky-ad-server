@@ -1,12 +1,15 @@
 # Portuguese Brazil localization file for Sparky Backup Server.
 # Copyright 2018 Paweł "pavroo" Pijanowski <pavroo@onet.eu> 2018/09/26
 # Under the GNU GPL v2
-# Last update 2019/01/23 by Daniel Campos Ramos
 # Translated by Daniel Campos Ramos 2018/10/28
+# Last update 2019/01/28 by pavroo
 LOCAL1="Teste de conexão com a Internet falhou!"
 LOCAL2="Uma instalação On-line de um aplicativo não pode ser feita!"
 LOCAL3="Saindo agora..."
 LOCAL4="Esta configuração de servidor está disponível apenas para a linha estável do Debian/Sparky."
+LOCAL5="This is Sparky Active Directory post-install script which will install and set all you need to run AD Server."
+LOCAL6="Continue?"
+#
 LOCAL110="Este pacote não está disponível para esta versão de sistema."
 LOCAL111="Gostaria de instalar o suporte a No-Break (UPS)?"
 LOCAL112="Gostaria de verificar as configurações de rede atuais fixadas automáticamente e/ou configurar manualmente?"

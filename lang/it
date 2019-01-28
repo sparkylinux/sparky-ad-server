@@ -2,10 +2,14 @@
 # Copyright 2018 Carlo Ttroiani <abbassolafrangetta@gmail.com> 2018/11/22
 # Rilasciato sotto licenza GNU GPL v2
 # Ultimo aggiornamento: 2018/11/23 by Carlo
+# Last update 2019/01/28 by pavroo
 LOCAL1="Test della connessione internet fallito!"
 LOCAL2="L'installazione on-line di un'applicazione server NON puo' essere fatta!"
 LOCAL3="Sto uscendo..."
 LOCAL4="La configurazione del server e' impostata solamente sulla Debian/Sparky stabile."
+LOCAL5="This is Sparky Active Directory post-install script which will install and set all you need to run AD Server."
+LOCAL6="Continue?"
+#
 LOCAL110="Questo pacchetto non e' disponibile per la versione del tuo sistema."
 LOCAL111="Vuoi installare il supporto per un gruppo di continuita' (UPS)?"
 LOCAL112="Vuoi controllare le impostazioni di rete e/o regolarle manualmente?"
@@ -35,3 +39,6 @@ LOCAL133="Il nome della cartella condivisa e' vuoto, prova di nuovo."
 LOCAL134="Vuoi condividere un'altra cartella su questo server?\nLa prossima finestra ti permettera' di configurare il percorso della cartella condivisa. Tutte le cartelle e le sott-cartelle saranno create, qualora non siano preesistenti.\nNON utilizzare il nome dell'amministratore di samba ne' le cartelle che hai gia' messo in condivisione."
 LOCAL135="Inserisci il nome della cartella condivisa. Se non inserisci alcun nome sara' utilizzato sparkydir.XXXX."
 LOCAL136="I set di pacchetti per server selezionati NON sono sono stati installati!"
+LOCAL137="Would you like to install and update Clamav antivirus? (recommended, but not required)"
+LOCAL138="Would you like to install netdata monitoring interface? (recommended but not required)"
+LOCAL139="Would you like to install webmin management interface? (recommended but not required)"
