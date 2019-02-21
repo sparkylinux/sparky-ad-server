@@ -10,6 +10,7 @@ LOCAL4="La configurazione del server e' impostata solamente sulla Debian/Sparky 
 LOCAL5="This is Sparky Active Directory post-install script which will install and set all you need to run AD Server."
 LOCAL6="Continue?"
 #
+LOCAL109="Is there more than one network card or port to be bonded?"
 LOCAL110="Questo pacchetto non e' disponibile per la versione del tuo sistema."
 LOCAL111="Vuoi installare il supporto per un gruppo di continuita' (UPS)?"
 LOCAL112="Vuoi controllare le impostazioni di rete e/o regolarle manualmente?"
@@ -19,7 +20,7 @@ LOCAL115="La configurazione della rete e' la seguente: puoi cambiarla o fermare 
 LOCAL116="Inserisci i nomi dei tuoi dispositivi di rete separati da uno spazio, se ne vuoi vincolarne piu' di uno!"
 LOCAL117="dovrai settare la rete MANUALMENTE!"
 LOCAL118="Vuoi installare i BIP di avvertimento?"
-LOCAL119="Inserisci il FQDN che vuoi utilizzare; suggerimento: sparky.intranet"
+LOCAL119="Inserisci il FQDN che vuoi utilizzare; suggerimento: host.lan.intranet"
 LOCAL120="Se non inserisci alcun nome la intranet di sparky sara' utilizzata come default"
 LOCAL121="Inserisci la password dell'account di amministratore di default di samba, nota che devi rispettare gli standard per la complessita' della password di Microsoft."
 LOCAL122="Inserisci di nuovo la password dell'account di amministratore di default di samba un'altra volta."

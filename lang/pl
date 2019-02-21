@@ -9,6 +9,7 @@ LOCAL4="Konfiguracja serwera jest przeznaczona tylko dla stabilnej linii Debian/
 LOCAL5="To jest Sparky Active Directory skrypt poinstalacyjny, który zainstaluje i ustawi wszystko co potrzebujesz do uruchomienia serwera AD."
 LOCAL6="Kontynuować?"
 #
+LOCAL109="Is there more than one network card or port to be bonded?"
 LOCAL110="Ten pakiet nie jest dostępny dla Twojej wersji systemu."
 LOCAL111="Czy chcesz zainstalować wsparcie dla zasilaczy awaryjnych (UPS)?"
 LOCAL112="Czy chcesz sprawdzić ustawienia sieciowe i/lub skonfigurować je ręcznie?"
@@ -18,7 +19,7 @@ LOCAL115="Wynik ifconfig jest następujący, więc zrób to teraz lub przerwij i
 LOCAL116="Wpisz nazwę lub nazwy twoich urządzeń sieciowych, jeśli chcesz połączyć (bond) więcej niż jeden; ze spacją pomiędzy!"
 LOCAL117="MUSISZ skonfigurować sieć ręcznie!"
 LOCAL118="Czy chcesz zainstalować powiadomienia brzęczyka (beep)?"
-LOCAL119="Wpisz FQDN (pełna nazwa domeny); podpowiedź: sparky.intranet"
+LOCAL119="Wpisz FQDN (pełna nazwa domeny); podpowiedź: host.lan.intranet"
 LOCAL120="Jeśli nie wpiszesz żadnej nazwy, zostanie użyta nazwa sparky.intranet"
 LOCAL121="Podaj wymagane hasło dla konta administratora samba, proszę mieć na uwadze standard haseł Microsoft."
 LOCAL122="Podaj wymagane hasło dla konta administratora samba ponownie."

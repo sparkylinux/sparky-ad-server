@@ -18,15 +18,15 @@ fi
 # get default's locale file
 DEFLOCDIR="/usr/share/sparky/sparky-ad-server"
 if [ "`cat /etc/default/locale | grep fr`" != "" ]; then
-. $DEFLOCDIR/fr
+export LOCAPT=fr && . $DEFLOCDIR/fr
 elif [ "`cat /etc/default/locale | grep it`" != "" ]; then
-. $DEFLOCDIR/it
+export LOCAPT=it && . $DEFLOCDIR/it
 elif [ "`cat /etc/default/locale | grep pl`" != "" ]; then
-. $DEFLOCDIR/pl
+export LOCAPT=pl && . $DEFLOCDIR/pl
 elif [ "`cat /etc/default/locale | grep pt_BR`" != "" ]; then
-. $DEFLOCDIR/pt_BR
+export LOCAPT=pt-BR && . $DEFLOCDIR/pt_BR
 else
-. $DEFLOCDIR/en
+export LOCAPT=en && . $DEFLOCDIR/en
 fi
 
 # set options
@@ -57,10 +57,10 @@ else
 	exit 1
 fi
 
-SPARKYVERCHECK5=`cat /etc/issue | grep 5`
-SPARKYVERCHECK4=`cat /etc/issue | grep 4`
-DEBIANVERCHECK10=`cat /etc/issue | grep buster`
-DEBIANVERCHECK9=`cat /etc/issue | grep stretch`
+SPARKYVERCHECK5=`cat /etc/apt/sources.list.d/sparky-testing.list | grep testing`
+SPARKYVERCHECK4=`cat /etc/apt/sources.list.d/sparky-stable.list | grep stable`
+DEBIANVERCHECK10=`cat /etc/apt/sources.list | grep -e testing -e buster`
+DEBIANVERCHECK9=`cat /etc/apt/sources.list | grep -e stable -e stretch`
 if [ "$SPARKYVERCHECK5" != "" ]; then
 	echo "$LOCAL4 $LOCAL3"
 	exit 1
@@ -68,6 +68,13 @@ elif [ "$DEBIANVERCHECK10" != "" ]; then
 	echo "$LOCAL4 $LOCAL3"
 	exit 1
 fi
+
+## enable recommended packages to be installed by default, so every optional is avaliable
+
+sed -i '1 c\APT::Install-Recommends "true";' /etc/apt/apt.conf.d/80packages
+sed -i '2 c\APT::Install-Suggests "false";' /etc/apt/apt.conf.d/80packages
+sed -i '3 c\Aptitude::Recommends-Important "true";' /etc/apt/apt.conf.d/80packages
+sed -i '4 c\Acquire::Languages { "fr"; "none"; };' /etc/apt/apt.conf.d/80packages
 
 ### additional desktop log section ###
 echo "AD Server Installer log" >> /var/log/sparky-ad-server.log
@@ -78,7 +85,7 @@ PINGTEST=$(ping -c 1 debian.org | grep [0-9])
 
 if [ "$PINGTEST" = "" ]; then
 	$DIALOG $TITLE"$TITLETEXT" $MSGBOX "$LOCAL1\n$LOCAL2\n\n$LOCAL3" $HEIGHT $WIDTH
-	echo "PING TEST=Internet connection not active, please connect for better results" >> /var/log/sparky-ad-server.log
+	echo "PING TEST=Internet connection not active, please connect to install from internet" >> /var/log/sparky-ad-server.log
 	exit 1
 else
 	echo "PING TEST=Internet connection OK" >> /var/log/sparky-ad-server.log
@@ -241,7 +248,14 @@ if [ "$NETCONF" = "OK" ]; then
 	mv /etc/network/interfaces /etc/network/interfaces.original
 
 cat > /etc/network/interfaces << FOO
-## Interface bonding
+
+
+### STEP 4 - Ask if want to install bonded interfaces or single one, than configure as desired
+## main ask dialog
+$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL109" $HEIGHT $WIDTH
+if [ "$?" = "0" ]; then
+
+## Do Interface bonding
 # Static IP address
 auto bond0
 iface bond0 inet static inet6 dhcp
@@ -283,6 +297,52 @@ else
 
 fi
 
+	echo "Bonding setup with more than one card or port" >> /var/log/sparky-ad-server.log
+
+else
+## Single network card
+# Static IP address
+auto $INETDEV0
+iface $INETDEV0 inet static inet6 dhcp
+	address $NETWORK1.$NETWORK2.$NETWORK3.$NETWORK4/24
+	netmask $NETMASK0
+	network $NETWORK1.$NETWORK2.$NETWORK3.0
+	broadcast $BROADCAST0
+	gateway $GATEWAY0
+FOO
+
+	echo "STEP4=SINGLE networking auto set up" >> /var/log/sparky-ad-server.log
+	cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
+
+	# check or change network settings
+	$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL112" $HEIGHT $WIDTH
+	if [ "$?" = "0" ]; then
+		nano /etc/network/interfaces
+		echo "STEP4=SINGLE networking manually fixed" >> /var/log/sparky-ad-server.log
+		cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
+	fi
+
+else
+
+	echo "STEP4=SINGLE networking autoconfiguration failed so editing interfaces manually" >> /var/log/sparky-ad-server.log
+
+	# no eth devices found, set interfaces manually
+	$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL113 $LOCAL117" $HEIGHT $WIDTH
+	if [ "$?" = "0" ]; then
+		nano /etc/network/interfaces
+	fi
+
+	cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
+
+fi
+	echo "Single network card setup" >> /var/log/sparky-ad-server.log
+
+fi
+
+### end of bonding setup ###
+
+
+
 # Backup and edit sysctl to enable ipv4 fowarding
 cp /etc/sysctl.conf /etc/sysctl.conf.original
 
@@ -299,7 +359,7 @@ chattr +i /etc/sysctl.conf
 
 # Include fixed ip with complete machine name high letters and remove any DNS entry
 #MYHOSTNAME=$(hostname)
-MYHOSTNAME=`cat /etc/hostname`
+#MYHOSTNAME=`cat /etc/hostname`
 MYDNAME0=$(domainname)
 if [ "$MYDNAME0" = "(none)" ]; then
 	$DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL119\n$LOCAL120" $HEIGHT $WIDTH 2>/tmp/mydname.$$
@@ -307,12 +367,14 @@ if [ "$MYDNAME0" = "(none)" ]; then
 	if [ "$MYDNAME1" != "" ]; then
 		MYDOMAINNAME="$MYDNAME1"
 	else
+# Must insert some informative text here confirming that this was used
 		MYDOMAINNAME="sparky.intranet"
 	fi
 else
-        MYDOMAINNAME="sparky.intranet"
+# commented as it looks like an error
+#        MYDOMAINNAME="sparky.intranet"
 fi
-DOMAIN=`cat /tmp/mydname.$$ | cut -d"." -f1`
+DOMAIN=$MYDOMAINNAME
 #TLD=`cat /tmp/mydname.$$ | cut -d"." -f2`
 MYFQDN=$MYHOSTNAME.$MYDOMAINNAME
 rm -f /tmp/mydname.$$
@@ -340,19 +402,21 @@ echo "ff02::2 ip6-allrouters" >> /etc/hosts
 echo " " >> /etc/hosts
 
 #  Add the server's current IP Address and HostName to /etc/hosts
-echo "$IPADDR4 $MYHOSTNAME $MYFQDN ${MYHOSTNAME^^} ${MYHOSTNAME^^}.$MYDOMAINNAME" >> /etc/hosts
-echo "$IPADDR6 $MYHOSTNAME $MYFQDN ${MYHOSTNAME^^} ${MYHOSTNAME^^}.$MYDOMAINNAME" >> /etc/hosts
+echo "$IPADDR4 $MYHOSTNAME $MYFQDN ${MYHOSTNAME^^} ${MYFQDN^^}" >> /etc/hosts
+echo "$IPADDR6 $MYHOSTNAME $MYFQDN ${MYHOSTNAME^^} ${MYFQDN^^}" >> /etc/hosts
 
 # Change the way resolvconf works and lock the file
 mv /etc/resolv.conf /etc/resolv.conf.original
 touch /etc/resolv.conf
-echo "domain $MYFQDN" >> /etc/resolv.conf
-echo "search $MYFQDN" >> /etc/resolv.conf
+echo "domain $MYDOMAINNAME" >> /etc/resolv.conf
+echo "search $MYDOMAINNAME" >> /etc/resolv.conf
 echo "nameserver 127.0.0.1" >> /etc/resolv.conf
 echo "nameserver ::1" >> /etc/resolv.conf
 echo "nameserver $IPADDR4" >> /etc/resolv.conf
 echo "nameserver $IPADDR6" >> /etc/resolv.conf
 domainname $MYDOMAINNAME
+
+# Lock changes on those files
 chattr +i /etc/hosts
 chattr +i /etc/resolv.conf
 
@@ -492,28 +556,27 @@ mkdir -p /home/$SMBROOT
 
 #!/bin/bash
 # Do the provision
-samba-tool domain provision --realm=$MYDOMAINNAME --domain=$DOMAIN^^ --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind refresh tickets=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="template homedir=/home/UserHomes/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="wins proxy=no" --option="dns proxy=no" --option="max wins ttl=518400"
+samba-tool domain provision --realm=${MYDOMAINNAME^^} --domain=${DOMAIN^^} --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind refresh tickets=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="template homedir=/home/UserHomes/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="wins proxy=no" --option="dns proxy=no" --option="max wins ttl=518400"
 
 #Linking samba generated kerberos file to systemwide
 ln -sf /var/lib/samba/private/krb5.conf /etc/krb5.conf
 chattr +i /etc/krb5.conf
 
+### Steps commented commented are intented to client version
 # Link libnss and reload
-if [ "$ARCH64" != "" ]; then
-	ln -s /lib/x86_64-linux-gnu/libnss_winbind.so.2 /lib/x86_64-linux-gnu/libnss_winbind.so
-elif [ "$ARCH32" != "" ]; then
-	ln -s /lib/i386-linux-gnu/libnss_winbind.so.2 /lib/i386-linux-gnu/libnss_winbind.so
-else
-	echo "your arch not supported... exiting..."
-	exit 1
-fi
-ldconfig
-
+#if [ "$ARCH64" != "" ]; then
+#	ln -s /lib/x86_64-linux-gnu/libnss_winbind.so.2 /lib/x86_64-linux-gnu/libnss_winbind.so
+#elif [ "$ARCH32" != "" ]; then
+#	ln -s /lib/i386-linux-gnu/libnss_winbind.so.2 /lib/i386-linux-gnu/libnss_winbind.so
+#else
+#	echo "your arch not supported... exiting..."
+#	exit 1
+#fi
+#ldconfig
 # Enable AD users to logon
-echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0022" | tee -a /etc/pam.d/common-session
-
+#echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0022" | tee -a /etc/pam.d/common-session
 # Enable AD Users and Groups avaliable locally
-sed -i '27 c\password        [success=2 default=ignore]      pam_winbind.so try_first_pass' /etc/pam.d/common-account
+#sed -i '27 c\password        [success=2 default=ignore]      pam_winbind.so try_first_pass' /etc/pam.d/common-account
 
 # Add domain admins to sudo
 echo "%domain\ admins@$MYDOMAINNAME ALL=(ALL:ALL) ALL" | tee -a /etc/sudoers
@@ -582,49 +645,50 @@ rpc:            db files
 netgroup:       nis
 FOO
 
+## Steps commented as this is already configured by samba-tool when provisioning
 # configure samba config
 UPMYHOSTNAME=`echo $MYHOSTNAME | tr [a-z] [A-Z]`
 UPMYFQDN=`echo $MYHOSTNAME.$MYDOMAINNAME | tr [a-z] [A-Z]`
 UPDOMAIN=`echo $DOMAIN | tr [a-z] [A-Z]`
-cat > /etc/samba/smb.conf << FOO
+#cat > /etc/samba/smb.conf << FOO
 # Global parameters
-[global]
-        netbios name = $UPMYHOSTNAME
-        realm = $UPMYFQDN
-        workgroup = $UPDOMAIN
-        dns forwarder = $MYDNS
-        log file = /home/log/samba/%m.log
-        log level = 1
-        max log size = 100000
-        server role = active directory domain controller
-        template homedir = /home/$SMBROOT/%U
-        template shell = /bin/bash
-        winbind nss info = rfc2307
-        winbind use default domain = Yes
-        idmap_ldb:use rfc2307 = yes
-        store dos attributes = Yes
-        map acl inherit = Yes
-        access based share enum = Yes
-        acl group control = Yes
-        vfs objects = acl_xattr
+#[global]
+#        netbios name = $UPMYHOSTNAME
+#        realm = $UPMYFQDN
+#        workgroup = $UPDOMAIN
+#        dns forwarder = $MYDNS
+#        log file = /home/log/samba/%m.log
+#        log level = 1
+#        max log size = 100000
+#        server role = active directory domain controller
+#        template homedir = /home/$SMBROOT/%U
+#        template shell = /bin/bash
+#        winbind nss info = rfc2307
+#        winbind use default domain = Yes
+#        idmap_ldb:use rfc2307 = yes
+#        store dos attributes = Yes
+#        map acl inherit = Yes
+#        access based share enum = Yes
+#        acl group control = Yes
+#        vfs objects = acl_xattr
+#
+#[netlogon]
+#        path = /var/lib/samba/sysvol/$MYDOMAINNAME/scripts
+#        read only = No
+#        browseable = No
+#
+#[sysvol]
+#        path = /var/lib/samba/sysvol
+#        read only = No
+#        browseable = No
+#
+echo "[homes]" | tee -a /etc/samba/smb.conf
+echo "        path = /home/$SMBROOT/%U" | tee -a /etc/samba/smb.conf
+echo "        read only - No" | tee -a /etc/samba/smb.conf
+echo "        writeable = Yes" | tee -a /etc/samba/smb.conf
+echo "        browsable = No" | tee -a /etc/samba/smb.conf
 
-[netlogon]
-        path = /var/lib/samba/sysvol/$MYDOMAINNAME/scripts
-        read only = No
-        browseable = No
-
-[sysvol]
-        path = /var/lib/samba/sysvol
-        read only = No
-        browseable = No
-
-[homes]
-        path = /home/$SMBROOT/%U
-        read only - No
-        writeable = Yes
-        browsable = No
-
-FOO
+#FOO
 
 # shared folder
 $DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL128" $HEIGHT $WIDTH 
