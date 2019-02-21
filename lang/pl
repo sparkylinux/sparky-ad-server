@@ -9,6 +9,7 @@ LOCAL4="Konfiguracja serwera jest przeznaczona tylko dla stabilnej linii Debian/
 LOCAL5="To jest Sparky Active Directory skrypt poinstalacyjny, który zainstaluje i ustawi wszystko co potrzebujesz do uruchomienia serwera AD."
 LOCAL6="Kontynuować?"
 #
+LOCAL108="What name this server should have? if nohing is entered, the default name sparkyserver will be used."
 LOCAL109="Is there more than one network card or port to be bonded?"
 LOCAL110="Ten pakiet nie jest dostępny dla Twojej wersji systemu."
 LOCAL111="Czy chcesz zainstalować wsparcie dla zasilaczy awaryjnych (UPS)?"

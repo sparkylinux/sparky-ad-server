@@ -161,11 +161,12 @@ fi
 $DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL111" $HEIGHT $WIDTH
 if [ "$?" = "0" ]; then
 
-	apt-get install nut -y
+	apt-get install nut nut-client -y
+	systemctl enable nut-monitor.service
 	echo "STEP2=UPS support installed" >> /var/log/sparky-ad-server.log
 
 else
-
+	systemctl disable nut-monitor.service
 	echo "STEP2=UPS support not installed" >> /var/log/sparky-ad-server.log
 
 fi
@@ -360,25 +361,43 @@ fi
 
 ### end of bonding setup ###
 
-
-
 # Backup and edit sysctl to enable ipv4 fowarding
 cp /etc/sysctl.conf /etc/sysctl.conf.original
 
 # Uncomment both line to enable packet forwarding for IPv4 and IPv6
-sed -i -e 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
-sed -i -e 's/#net.ipv6.conf.all.forwarding=1/net.ipv6.conf.all.forwarding=1/g' /etc/sysctl.conf
 sysctl -w net.ipv4.ip_forward=1
 sysctl -w net.ipv6.conf.all.forwarding=1
+# saving the setting for reboot time
+sed -i -e 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
+sed -i -e 's/#net.ipv6.conf.all.forwarding=1/net.ipv6.conf.all.forwarding=1/g' /etc/sysctl.conf
+# lock changes into the config
 chattr +i /etc/sysctl.conf
 
 ### end of step 4 ###
 
 ### step 5: Pre samba configuration, backup and changes hosts file ###
 
-# Include fixed ip with complete machine name high letters and remove any DNS entry
+# question the wanted hostname
 #MYHOSTNAME=$(hostname)
-#MYHOSTNAME=`cat /etc/hostname`
+FILEHOSTNAME=`cat /etc/hostname`
+if [ "$FILEHOSTNAME" = "live" ]; then
+	echo "Live enviroment! cannot continue"
+	MYHOSTNAME="live"
+	else
+	MYHOSTNAME=""
+fi
+if [ "$MYHOSTNAME" = "" ]; then
+	$DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL119\n$LOCAL120" $HEIGHT $WIDTH 2>/tmp/myhname.$$
+	MYHNAME1=`cat /tmp/myhname.$$`
+	if [ "$MYHNAME1" != "" ]; then
+		MYHOSTNAME="$MYHNAME1"
+	else
+# Must insert some informative text here confirming that this was used
+		MYHOSTNAME="sparkyserver"
+	fi
+fi
+
+# Ask for domain name or use the default; Include fixed ip with complete machine name high letters and remove any DNS entry;
 MYDNAME0=$(domainname)
 if [ "$MYDNAME0" = "(none)" ]; then
 	$DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL119\n$LOCAL120" $HEIGHT $WIDTH 2>/tmp/mydname.$$
@@ -389,7 +408,7 @@ if [ "$MYDNAME0" = "(none)" ]; then
 # Must insert some informative text here confirming that this was used
 		MYDOMAINNAME="sparky.intranet"
 	fi
-else
+#else
 # commented as it looks like an error
 #        MYDOMAINNAME="sparky.intranet"
 fi
@@ -440,6 +459,7 @@ chattr +i /etc/hosts
 chattr +i /etc/resolv.conf
 
 echo "STEP5:" >> /var/log/sparky-ad-server.log
+echo "MYHOSTNAME=$MYHOSTNAME" >> /var/log/sparky-ad-server.log
 echo "MYDOMAINNAME=$MYDOMAINNAME" >> /var/log/sparky-ad-server.log
 echo "MYFQDN=$MYHOSTNAME.$MYDOMAINNAME" >> /var/log/sparky-ad-server.log
 echo "ETC-HOSTS:" >> /var/log/sparky-ad-server.log
@@ -457,9 +477,9 @@ systemctl stop nmbd
 systemctl stop winbind
 systemctl stop samba
 systemctl stop samba-ad-dc
-systemctl disable smbd.service
-systemctl disable nmbd.service
-systemctl disable winbind.service
+#systemctl disable smbd.service
+#systemctl disable nmbd.service
+#systemctl disable winbind.service
 systemctl disable samba.service
 
 # Backup actual Samba config file
@@ -562,9 +582,9 @@ while [ "$ROOTSMB" = "$TARGETUSER" ]; do
 	fi
 	rm -f /tmp/smbroot.$$
 
-	if [ "$ROOTSMB" = "$TARGETUSER" ]; then
-		$DIALOG $TITLE"$TITLETEXT" $MSGBOX "$LOCAL131" $HEIGHT $WIDTH
-	fi
+#	if [ "$ROOTSMB" = "$TARGETUSER" ]; then
+#		$DIALOG $TITLE"$TITLETEXT" $MSGBOX "$LOCAL131" $HEIGHT $WIDTH
+#	fi
 done
 rm -f /tmp/smbroot.$$
 
@@ -573,9 +593,8 @@ echo "Creating /home/log/samba and /home/UserHomes directories..."
 mkdir -p /home/log/samba
 mkdir -p /home/$SMBROOT
 
-#!/bin/bash
 # Do the provision
-samba-tool domain provision --realm=${MYDOMAINNAME^^} --domain=${DOMAIN^^} --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind refresh tickets=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="template homedir=/home/UserHomes/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="wins proxy=no" --option="dns proxy=no" --option="max wins ttl=518400"
+samba-tool domain provision --realm=${MYDOMAINNAME^^} --domain=${DOMAIN^^} --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind refresh tickets=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="template homedir=/home/$SMBROOT/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="wins proxy=no" --option="dns proxy=no" --option="max wins ttl=518400"
 
 #Linking samba generated kerberos file to systemwide
 ln -sf /var/lib/samba/private/krb5.conf /etc/krb5.conf
@@ -636,36 +655,39 @@ netstat –tulpn| egrep "smbd|samba"
 # Important step to grant network file service
 net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"
 
-# Ajust ntp_signd
-cp /etc/ntp.conf /etc/ntp.conf.original
+# Ajust ntp_signd (commented lines were changed to external file linkage)
+mv /etc/ntp.conf /etc/ntp.conf.original
 chattr +i /etc/ntp.conf.orignal
-chgrp ntp /var/lib/samba/ntp_signd
 chown root:ntp /var/lib/samba/ntp_signd/
-chmod 750 /var/lib/samba/ntp_signd/
-chattr -i /etc/ntp.conf
 
-CHECKNTP=`cat /tmp/ntpconf | grep br`
-if [ "$CHECKNTP" != "" ]; then
+#chgrp ntp /var/lib/samba/ntp_signd
+#chmod 750 /var/lib/samba/ntp_signd/
+#chattr -i /etc/ntp.conf
+#rm /etc/ntp.conf
+
+#CHECKNTP=`echo APTLOC | grep br`
+#if [ "$CHECKNTP" != "br" ]; then
 #sed -i '20 c\pool gps.ntp.br iburst' /etc/ntp.conf
 #sed -i '21 c\pool a.ntp.br iburst' /etc/ntp.conf
 #sed -i '22 c\pool b.ntp.br iburst' /etc/ntp.conf
 #sed -i '23 c\pool c.ntp.briburst' /etc/ntp.conf
-sed -i -e 's/0.debian.pool.ntp.org/gps.ntp.br/g' /etc/ntp.conf
-sed -i -e 's/1.debian.pool.ntp.org/a.ntp.br/g' /etc/ntp.conf
-sed -i -e 's/2.debian.pool.ntp.org/b.ntp.br/g' /etc/ntp.conf
-sed -i -e 's/3.debian.pool.ntp.org/c.ntp.br/g' /etc/ntp.conf
-fi
+# else
+#sed -i -e 's/0.debian.pool.ntp.org/gps.ntp.br/g' /etc/ntp.conf
+#sed -i -e 's/1.debian.pool.ntp.org/a.ntp.br/g' /etc/ntp.conf
+#sed -i -e 's/2.debian.pool.ntp.org/b.ntp.br/g' /etc/ntp.conf
+#sed -i -e 's/3.debian.pool.ntp.org/c.ntp.br/g' /etc/ntp.conf
+#fi
 
 #sed -i '35 c\restrict -4 default kod notrap nomodify nopeer noquery mssntp' /etc/ntp.conf
 #sed -i '36 c\restrict -6 default kod notrap nomodify nopeer noquery mssntp' /etc/ntp.conf
-sed -i -e 's/noquery limited/noquery mssntp/g' /etc/ntp.conf
-sed -i -e 's/noquery limited/noquery mssntp/g' /etc/ntp.conf
+#sed -i -e 's/noquery limited/noquery mssntp/g' /etc/ntp.conf
+#sed -i -e 's/noquery limited/noquery mssntp/g' /etc/ntp.conf
 #sed -i '52 c\broadcast $BROADCAST1' /etc/ntp.conf
-sed -i -e 's/#broadcast /broadcast /g' /etc/ntp.conf
-sed -i -e 's/broadcast [0-9]*.[0-9]*.[0-9]*.[0-9]*/broadcast $BROADCAST1/g' /etc/ntp.conf
-echo "ntpsigndsocket /var/lib/samba/ntp_signd" >> /etc/ntp.conf
-echo "listen on $IPADDR4" >> /etc/ntp.conf
-echo "listen on $IPADDR6" >> /etc/ntp.conf
+#sed -i -e 's/#broadcast /broadcast /g' /etc/ntp.conf
+#sed -i -e 's/broadcast [0-9]*.[0-9]*.[0-9]*.[0-9]*/broadcast $BROADCAST1/g' /etc/ntp.conf
+#echo "ntpsigndsocket /var/lib/samba/ntp_signd" >> /etc/ntp.conf
+#echo "listen on $IPADDR4" >> /etc/ntp.conf
+#echo "listen on $IPADDR6" >> /etc/ntp.conf
 chattr +i /etc/ntp.conf
 systemctl daemon-reload
 service ntp start
@@ -714,66 +736,11 @@ service ntp start
 #
 #FOO
 
-passwd:         compat winbind
-group:          compat winbind
-shadow:         compat
-gshadow:        files
-
-hosts:  files wins mdns4_minimal dns [NOTFOUND=return]
-networks:       files
-
-protocols:      db files
-services:       db files
-ethers:         db files
-rpc:            db files
-
-netgroup:       nis
-FOO
-
-## Steps commented as this is already configured by samba-tool when provisioning
-# configure samba config
-UPMYHOSTNAME=`echo $MYHOSTNAME | tr [a-z] [A-Z]`
-UPMYFQDN=`echo $MYHOSTNAME.$MYDOMAINNAME | tr [a-z] [A-Z]`
-UPDOMAIN=`echo $DOMAIN | tr [a-z] [A-Z]`
-#cat > /etc/samba/smb.conf << FOO
-# Global parameters
-#[global]
-#        netbios name = $UPMYHOSTNAME
-#        realm = $UPMYFQDN
-#        workgroup = $UPDOMAIN
-#        dns forwarder = $MYDNS
-#        log file = /home/log/samba/%m.log
-#        log level = 1
-#        max log size = 100000
-#        server role = active directory domain controller
-#        template homedir = /home/$SMBROOT/%U
-#        template shell = /bin/bash
-#        winbind nss info = rfc2307
-#        winbind use default domain = Yes
-#        idmap_ldb:use rfc2307 = yes
-#        store dos attributes = Yes
-#        map acl inherit = Yes
-#        access based share enum = Yes
-#        acl group control = Yes
-#        vfs objects = acl_xattr
-#
-#[netlogon]
-#        path = /var/lib/samba/sysvol/$MYDOMAINNAME/scripts
-#        read only = No
-#        browseable = No
-#
-#[sysvol]
-#        path = /var/lib/samba/sysvol
-#        read only = No
-#        browseable = No
-#
 echo "[homes]" | tee -a /etc/samba/smb.conf
 echo "        path = /home/$SMBROOT/%U" | tee -a /etc/samba/smb.conf
 echo "        read only - No" | tee -a /etc/samba/smb.conf
 echo "        writeable = Yes" | tee -a /etc/samba/smb.conf
 echo "        browsable = No" | tee -a /etc/samba/smb.conf
-
-#FOO
 
 # shared folder
 $DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL128" $HEIGHT $WIDTH 
@@ -872,8 +839,11 @@ samba-tool domain level show
 mkdir -p /srv/samba/data/
 chown root:"Domain Admins" /srv/samba/data/ 
 chmod 0770 /srv/samba/data/
+
+## commented postmail configuration
 #postconf -e "myorigin = $MYDOMAINNAME"
 #postconf -e "myhostname=$MYFQDN"
+
 echo "STEP6=finished..." >> /var/log/sparky-ad-server.log
 
 ### end of step 6 ###

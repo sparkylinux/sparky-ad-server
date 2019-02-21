@@ -10,6 +10,7 @@ LOCAL4="La configuration du serveur est ciblé exclusivement sur la version stab
 LOCAL5="This is Sparky Active Directory post-install script which will install and set all you need to run AD Server."
 LOCAL6="Continue?"
 #
+LOCAL108="What name this server should have? if nohing is entered, the default name sparkyserver will be used."
 LOCAL109="Is there more than one network card or port to be bonded?"
 LOCAL110="Ce paquet n'est pas disponible pour la version de votre système."
 LOCAL111="Voulez-vous installer le support pour un onduleur (UPS)?"

@@ -10,6 +10,7 @@ LOCAL4="Esta configuração de servidor está disponível apenas para a linha es
 LOCAL5="This is Sparky Active Directory post-install script which will install and set all you need to run AD Server."
 LOCAL6="Continue?"
 #
+LOCAL108="Qual nome este servidor deve ter? Se nada for digitado, o nome padrão sparkyserver será utilizado."
 LOCAL109="Existe mais de uma placa ou porta de rede para cascateamento?"
 LOCAL110="Este pacote não está disponível para esta versão de sistema."
 LOCAL111="Gostaria de instalar o suporte a No-Break (UPS)?"
