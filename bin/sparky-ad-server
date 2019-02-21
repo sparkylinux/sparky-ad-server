@@ -6,7 +6,7 @@
 #
 # script deps: apt, bash, coreutils, dpkg, dialog, gawk, grep, hostname, nano, iputils-ping, sed
 #
-# Last update 2019/01/28 by pavroo
+# Last update 2019/01/29 by Daniel
 
 # checking to make sure the script is running with root privileges
 TESTROOT=`whoami`
@@ -77,6 +77,7 @@ sed -i '3 c\Aptitude::Recommends-Important "true";' /etc/apt/apt.conf.d/80packag
 sed -i '4 c\Acquire::Languages { "fr"; "none"; };' /etc/apt/apt.conf.d/80packages
 
 ### additional desktop log section ###
+echo "Creating install log file..."
 echo "AD Server Installer log" >> /var/log/sparky-ad-server.log
 echo "==============================================================" >> /var/log/sparky-ad-server.log
 
@@ -94,6 +95,24 @@ fi
 $DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL5\n$LOCAL6" $HEIGHT $WIDTH
 if [ "$?" != "0" ]; then
 	exit 1
+fi
+
+### pre install apt behaviour modification ##
+APTOPT=`/etc/apt/apt.conf.d/80packages`
+if [  -f "$APTOPT" ];
+then
+	echo "APTOPT=Apt behaviour already exists" >> /var/log/sparky-ad-server.log
+else
+	cp /usr/share/sparky/sparky-ad-server/80packages /etc/apt/apt.conf.d
+	echo "APTOPT=Apt behaviour changed" >> /var/log/sparky-ad-server.log
+fi
+
+if [ "$PINGTEST" = "" ]; then
+	$DIALOG $TITLE"$TITLETEXT" $MSGBOX "$LOCAL1\n$LOCAL2\n\n$LOCAL3" $HEIGHT $WIDTH
+	
+	exit 1
+else
+	echo "PING TEST=Internet connection OK" >> /var/log/sparky-ad-server.log
 fi
 
 ### step 1: install pre-requisites ###
@@ -124,13 +143,13 @@ else
 
 fi
 
-# check is the set of server apps installed
+# check if the set of server apps was installed
 if [ -d /usr/share/doc/sparky-meta-server ]; then
 	echo "STEP1=$SERVPACK bit pre-requisites packages installed ok" >> /var/log/sparky-ad-server.log
-	echo "$SERVPACK pre-requisites packages installed ok"
+	echo "$SERVPACK pre-requisites packages were installed ok"
 else
 	echo "STEP1=$SERVPACK bit pre-requisites packages NOT installed" >> /var/log/sparky-ad-server.log
-	echo "$SERVPACK pre-requisites packages NOT installed... Exiting..."
+	echo "$SERVPACK pre-requisites packages were NOT installed... Exiting..."
 	exit 1
 fi
 
@@ -578,9 +597,44 @@ chattr +i /etc/krb5.conf
 # Enable AD Users and Groups avaliable locally
 #sed -i '27 c\password        [success=2 default=ignore]      pam_winbind.so try_first_pass' /etc/pam.d/common-account
 
+mv /etc/nsswitch.conf /etc/nsswitch.conf.original
+cat > /etc/nsswitch.conf << FOO
+# /etc/nsswitch.conf
+#
+# Example configuration of GNU Name Service Switch functionality.
+# If you have the `glibc-doc-reference' and `info' packages installed, try:
+# `info libc "Name Service Switch"' for information about this file.
+
+passwd:         compat winbind
+group:          compat winbind
+shadow:         compat
+gshadow:        files
+
+hosts:  files wins mdns4_minimal dns [NOTFOUND=return]
+networks:       files
+
+protocols:      db files
+services:       db files
+ethers:         db files
+rpc:            db files
+
+netgroup:       nis
+FOO
+
+# Enable and start samba ad dc service
+systemctl unmask samba-ad-dc.service
+systemctl start samba-ad-dc.service
+systemctl enable samba-ad-dc.service
+
 # Add domain admins to sudo
 echo "%domain\ admins@$MYDOMAINNAME ALL=(ALL:ALL) ALL" | tee -a /etc/sudoers
 echo "Set group_source dynamic" >> /etc/sudo.conf
+
+## Verify all services
+netstat –tulpn| egrep "smbd|samba"
+
+# Important step to grant network file service
+net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"
 
 # Ajust ntp_signd
 cp /etc/ntp.conf /etc/ntp.conf.original
@@ -616,18 +670,49 @@ chattr +i /etc/ntp.conf
 systemctl daemon-reload
 service ntp start
 
-# Enable and start samba ad dc service
-systemctl unmask samba-ad-dc.service
-systemctl start samba-ad-dc.service
-systemctl enable samba-ad-dc.service
-
-mv /etc/nsswitch.conf /etc/nsswitch.conf.original
-cat > /etc/nsswitch.conf << FOO
-# /etc/nsswitch.conf
+# configure samba config - commented as this should be a reference, provision already create this file
+#UPMYHOSTNAME=`echo $MYHOSTNAME | tr [a-z] [A-Z]`
+#UPMYFQDN=`echo $MYHOSTNAME.$MYDOMAINNAME | tr [a-z] [A-Z]`
+#UPDOMAIN=`echo $DOMAIN | tr [a-z] [A-Z]`
+#cat > /etc/samba/smb.conf << FOO
+# Global parameters
+#[global]
+#        netbios name = $UPMYHOSTNAME
+#        realm = $UPMYFQDN
+#        workgroup = $UPDOMAIN
+#        dns forwarder = $MYDNS
+#        log file = /home/log/samba/%m.log
+#        log level = 1
+#        max log size = 100000
+#        server role = active directory domain controller
+#        template homedir = /home/$SMBROOT/%U
+#        template shell = /bin/bash
+#        winbind nss info = rfc2307
+#        winbind use default domain = Yes
+#        idmap_ldb:use rfc2307 = yes
+#        store dos attributes = Yes
+#        map acl inherit = Yes
+#        access based share enum = Yes
+#        acl group control = Yes
+#       vfs objects = acl_xattr
 #
-# Example configuration of GNU Name Service Switch functionality.
-# If you have the `glibc-doc-reference' and `info' packages installed, try:
-# `info libc "Name Service Switch"' for information about this file.
+#[netlogon]
+#        path = /var/lib/samba/sysvol/$MYDOMAINNAME/scripts
+#        read only = No
+#        browseable = No
+#
+#[sysvol]
+#        path = /var/lib/samba/sysvol
+#        read only = No
+#        browseable = No
+#
+#[homes]
+#       path = /home/$SMBROOT/%U
+#        read only - No
+#        writeable = Yes
+#        browsable = No
+#
+#FOO
 
 passwd:         compat winbind
 group:          compat winbind
@@ -780,12 +865,6 @@ if [ "$CHECKSHARE0" != "" ]; then
 	rm /tmp/dirshare.$$
 fi
 smbcontrol all reload-config
-
-# Important step to grant network file service
-net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"
-
-## Verify all services
-netstat –tulpn| egrep "smbd|samba"
 
 ## Verify domain version
 samba-tool domain level show
