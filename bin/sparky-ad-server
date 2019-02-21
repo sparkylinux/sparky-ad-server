@@ -6,7 +6,7 @@
 #
 # script deps: apt, bash, coreutils, dpkg, dialog, gawk, grep, hostname, nano, iputils-ping, sed
 #
-# Last update 2019/01/29 by Daniel
+# Last update 2019/02/20 by Daniel
 
 # checking to make sure the script is running with root privileges
 TESTROOT=`whoami`
