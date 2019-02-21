@@ -4,9 +4,9 @@
 # Copyright Paweł Pijanowski "pavroo" <pavroo@onet.eu> & Daniel Campos Ramos 2018/09/23
 # Under the GNU GPL3 License
 #
-# script deps: apt, bash, coreutils, dpkg, dialog, gawk, grep, hostname, nano, iputils-ping, sed
+# script deps: apt, bash, coreutils, dpkg, dialog, gawk, grep, hostname, nano, iputils-ping, sed, sparky-ntp-server
 #
-# Last update 2019/02/20 by Daniel
+# Last update 2019/02/21 by pavroo
 
 # checking to make sure the script is running with root privileges
 TESTROOT=`whoami`
@@ -656,8 +656,10 @@ netstat –tulpn| egrep "smbd|samba"
 net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"
 
 # Ajust ntp_signd (commented lines were changed to external file linkage)
-mv /etc/ntp.conf /etc/ntp.conf.original
-chattr +i /etc/ntp.conf.orignal
+if [ -f /etc/ntp.conf ]; then
+	mv /etc/ntp.conf /etc/ntp.conf.original
+	chattr +i /etc/ntp.conf.orignal
+fi
 chown root:ntp /var/lib/samba/ntp_signd/
 
 #chgrp ntp /var/lib/samba/ntp_signd
@@ -688,7 +690,10 @@ chown root:ntp /var/lib/samba/ntp_signd/
 #echo "ntpsigndsocket /var/lib/samba/ntp_signd" >> /etc/ntp.conf
 #echo "listen on $IPADDR4" >> /etc/ntp.conf
 #echo "listen on $IPADDR6" >> /etc/ntp.conf
-chattr +i /etc/ntp.conf
+if [ -f /etc/sparky-ntp.conf ]; then
+	cp /etc/sparky-ntp.conf /etc/ntp.conf
+	chattr +i /etc/ntp.conf
+fi
 systemctl daemon-reload
 service ntp start
 

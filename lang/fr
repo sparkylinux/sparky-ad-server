@@ -1,8 +1,8 @@
-#  Fichier de localisation française de Sparky AD Server.
+﻿#  Fichier de localisation française de Sparky AD Server.
 # Copyright 2016 hiver <hiver@club-internet.fr> 2018/11/12
 # Sous licence GNU GPL v2
 # Dernière mise à jour 2018/11/12
-# Last update 2019/01/28 by pavroo
+# Last update 2019/02/21 by pavroo
 LOCAL1="Le test de connexion à internet a échoué!"
 LOCAL2="L'installation en ligne de l'application ne peut être faite!"
 LOCAL3="Sortie à présent..."
@@ -10,8 +10,8 @@ LOCAL4="La configuration du serveur est ciblé exclusivement sur la version stab
 LOCAL5="This is Sparky Active Directory post-install script which will install and set all you need to run AD Server."
 LOCAL6="Continue?"
 #
-LOCAL108="What name this server should have? if nohing is entered, the default name sparkyserver will be used."
-LOCAL109="Is there more than one network card or port to be bonded?"
+LOCAL108="Quel nom doit avoir ce serveur? Si rien n'est entré, le nom par défaut sparkyserver sera utilisé."
+LOCAL109="Y a-t-il plus d'une carte réseau ou port à relier?"
 LOCAL110="Ce paquet n'est pas disponible pour la version de votre système."
 LOCAL111="Voulez-vous installer le support pour un onduleur (UPS)?"
 LOCAL112="Voulez-vous vérifier les paramètres du réseau et/ou les configurer manuellement?"
@@ -21,7 +21,7 @@ LOCAL115="Le résultat de la configuration du réseau est la suivante, l'utilise
 LOCAL116="Entrer le nom ou les noms de vos périphériques réseau, si vous voulez en relier plus d'un; séparés par des espaces!"
 LOCAL117="Vous devez configurer le réseau manuellement!"
 LOCAL118="Voulez-vous installer les bips d'alerte?"
-LOCAL119="Entrer le FQDN désiré; exemple: server.sparky.intranet"
+LOCAL119="Entrer le FQDN désiré; exemple: host.lan.intranet"
 LOCAL120="Si vous n'entrer pas de nom, sparky.intranet sera utilisé par défaut"
 LOCAL121="Entrer le mot de passe de l'administrateur par défaut de Samba, s'il vous plaît suivez les standards de complexité de mots de passe de Microsoft."
 LOCAL122="Entrer à nouveau le mot de passe de l'administrateur par défaut de Samba."

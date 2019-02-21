@@ -2,7 +2,7 @@
 # Copyright 2018 Carlo Ttroiani <abbassolafrangetta@gmail.com> 2018/11/22
 # Rilasciato sotto licenza GNU GPL v2
 # Ultimo aggiornamento: 2018/11/23 by Carlo
-# Last update 2019/01/28 by pavroo
+# Last update 2019/02/21 by pavroo
 LOCAL1="Test della connessione internet fallito!"
 LOCAL2="L'installazione on-line di un'applicazione server NON puo' essere fatta!"
 LOCAL3="Sto uscendo..."
@@ -10,8 +10,8 @@ LOCAL4="La configurazione del server e' impostata solamente sulla Debian/Sparky 
 LOCAL5="This is Sparky Active Directory post-install script which will install and set all you need to run AD Server."
 LOCAL6="Continue?"
 #
-LOCAL108="What name this server should have? if nohing is entered, the default name sparkyserver will be used."
-LOCAL109="Is there more than one network card or port to be bonded?"
+LOCAL108="Quale nome dovrebbe avere questo server? Se non viene inserito nulla, verrà utilizzato il nome predefinito sparkyserver."
+LOCAL109="C'è più di una scheda di rete o una porta da collegare?"
 LOCAL110="Questo pacchetto non e' disponibile per la versione del tuo sistema."
 LOCAL111="Vuoi installare il supporto per un gruppo di continuita' (UPS)?"
 LOCAL112="Vuoi controllare le impostazioni di rete e/o regolarle manualmente?"

@@ -30,6 +30,7 @@ hostname
 iputils-ping
 nano
 sed
+sparky-ntp-server
 sudo
 
 Install:

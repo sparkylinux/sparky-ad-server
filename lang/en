@@ -1,7 +1,7 @@
 # English localization file for Sparky Backup Server.
 # Copyright 2018 Paweł "pavroo" Pijanowski <pavroo@onet.eu> 2018/09/26
 # Under the GNU GPL v2
-# Last update 2019/01/28 by pavroo
+# Last update 2019/02/21 by pavroo
 LOCAL1="Internet connection test failed!"
 LOCAL2="On-line instalation of a server appilance can NOT be done!"
 LOCAL3="Exiting now..."
@@ -9,7 +9,7 @@ LOCAL4="The server configuration is targeted to Debian/Sparky stable line only."
 LOCAL5="This is Sparky Active Directory post-install script which will install and set all you need to run AD Server."
 LOCAL6="Continue?"
 #
-LOCAL108="What name this server should have? if nohing is entered, the default name sparkyserver will be used."
+LOCAL108="What name this server should have? If nothing is entered, the default name sparkyserver will be used."
 LOCAL109="Is there more than one network card or port to be bonded?"
 LOCAL110="This package is not available for your system version."
 LOCAL111="Do you want to install support for an uninterruptible power supply (UPS,No-Break)?"
