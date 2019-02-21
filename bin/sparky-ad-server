@@ -74,7 +74,7 @@ fi
 sed -i '1 c\APT::Install-Recommends "true";' /etc/apt/apt.conf.d/80packages
 sed -i '2 c\APT::Install-Suggests "false";' /etc/apt/apt.conf.d/80packages
 sed -i '3 c\Aptitude::Recommends-Important "true";' /etc/apt/apt.conf.d/80packages
-sed -i '4 c\Acquire::Languages { "fr"; "none"; };' /etc/apt/apt.conf.d/80packages
+sed -i '4 c\Acquire::Languages { "$LOCAPT"; "none"; };' /etc/apt/apt.conf.d/80packages
 
 ### additional desktop log section ###
 echo "Creating install log file..."
