@@ -1,15 +1,18 @@
 # Polish localization file for Sparky AD Server.
 # Copyright 2018 Paweł "pavroo" Pijanowski <pavroo@onet.eu> 2018/10/28
 # Under the GNU GPL v2
-# Last update 2019/02/21 by pavroo
+# Last update 2019/02/23 by Daniel
 LOCAL1="Połączenie z internetem nieudane!"
 LOCAL2="Instalacja on-line zplikacji serwerowych może być przeprowadzona!"
 LOCAL3="Kończenie..."
 LOCAL4="Konfiguracja serwera jest przeznaczona tylko dla stabilnej linii Debian/Sparky."
 LOCAL5="To jest Sparky Active Directory skrypt poinstalacyjny, który zainstaluje i ustawi wszystko co potrzebujesz do uruchomienia serwera AD."
 LOCAL6="Kontynuować?"
+LOCAL7="Sparky Server Installer"
 #
-LOCAL108="Jaką nazwę powinien mieć ten serwer? Jeśli nic nie zostanie wprowadzone, zostanie użyta domyślna nazwa sparkyserver."
+LOCAL106="Would you like to use the already configured domain name?"
+LOCAL107="Enter the desired TLD name; hint: host.lan.>> intranet << ; If you do not enter any name, the default name intranet will be used."
+LOCAL108="Jaką nazwę powinien mieć ten serwer? podpowiedź: >> host <<.lan.intranet ;Jeśli nic nie zostanie wprowadzone, zostanie użyta domyślna nazwa server."
 LOCAL109="Czy istnieje więcej niż jedna karta sieciowa lub port do połączenia?"
 LOCAL110="Ten pakiet nie jest dostępny dla Twojej wersji systemu."
 LOCAL111="Czy chcesz zainstalować wsparcie dla zasilaczy awaryjnych (UPS)?"
@@ -20,8 +23,8 @@ LOCAL115="Wynik ifconfig jest następujący, więc zrób to teraz lub przerwij i
 LOCAL116="Wpisz nazwę lub nazwy twoich urządzeń sieciowych, jeśli chcesz połączyć (bond) więcej niż jeden; ze spacją pomiędzy!"
 LOCAL117="MUSISZ skonfigurować sieć ręcznie!"
 LOCAL118="Czy chcesz zainstalować powiadomienia brzęczyka (beep)?"
-LOCAL119="Wpisz FQDN (pełna nazwa domeny); podpowiedź: host.lan.intranet"
-LOCAL120="Jeśli nie wpiszesz żadnej nazwy, zostanie użyta nazwa sparky.intranet"
+LOCAL119="Wpisz domain (pełna nazwa domeny); podpowiedź: host.>> lan <<.intranet"
+LOCAL120="Jeśli nie wpiszesz żadnej nazwy, zostanie użyta nazwa sparky"
 LOCAL121="Podaj wymagane hasło dla konta administratora samba, proszę mieć na uwadze standard haseł Microsoft."
 LOCAL122="Podaj wymagane hasło dla konta administratora samba ponownie."
 LOCAL123="Hasła nie są jednakowe. Spróbuj ponownie."

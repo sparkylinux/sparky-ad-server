@@ -1,15 +1,18 @@
 # English localization file for Sparky Backup Server.
 # Copyright 2018 Paweł "pavroo" Pijanowski <pavroo@onet.eu> 2018/09/26
 # Under the GNU GPL v2
-# Last update 2019/02/21 by pavroo
+# Last update 2019/02/23 by Daniel
 LOCAL1="Internet connection test failed!"
 LOCAL2="On-line instalation of a server appilance can NOT be done!"
 LOCAL3="Exiting now..."
 LOCAL4="The server configuration is targeted to Debian/Sparky stable line only."
-LOCAL5="This is Sparky Active Directory post-install script which will install and set all you need to run AD Server."
+LOCAL5="This is Sparky Active Directory post-install script which will install and set all you need to run AD simple file Server."
 LOCAL6="Continue?"
+LOCAL7="Sparky Server Installer"
 #
-LOCAL108="What name this server should have? If nothing is entered, the default name sparkyserver will be used."
+LOCAL106="Would you like to use the already configured domain name?"
+LOCAL107="Enter the desired TLD name; hint: host.lan.>> intranet << ; If you do not enter any name, the default name intranet will be used."
+LOCAL108="Enter the desired server name; hint: >> host <<.lan.intranet ; If you do not enter any name, the default name server will be used."
 LOCAL109="Is there more than one network card or port to be bonded?"
 LOCAL110="This package is not available for your system version."
 LOCAL111="Do you want to install support for an uninterruptible power supply (UPS,No-Break)?"
@@ -20,8 +23,8 @@ LOCAL115="The network configuration will be as follows, do it as it is or stop i
 LOCAL116="Enter a name or names of your net devices, if you want to bond more then one; with spaces!"
 LOCAL117="you HAVE to set network manually!"
 LOCAL118="Do you want to install pcspeaker sound warning service sparky-beep?"
-LOCAL119="Enter the desired FQDN; hint: host.lan.intranet"
-LOCAL120="If you do not enter any name, the sparky.intranet will be used as default"
+LOCAL119="Enter the desired domain name; hint: host.>> lan <<.intranet"
+LOCAL120="If you do not enter any name, sparky will be used as default"
 LOCAL121="Enter the desired default administrator account password of samba, please follow the Microsoft standard for password complexity."
 LOCAL122="Enter the desired default administrator account password of samba again."
 LOCAL123="Passwords do not match. Lets try again."

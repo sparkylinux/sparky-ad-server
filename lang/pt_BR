@@ -2,15 +2,18 @@
 # Copyright 2018 Paweł "pavroo" Pijanowski <pavroo@onet.eu> 2018/09/26
 # Under the GNU GPL v2
 # Translated by Daniel Campos Ramos 2018/10/28
-# Last update 2019/02/21 by pavroo
+# Last update 2019/02/23 by Daniel
 LOCAL1="Teste de conexão com a Internet falhou!"
 LOCAL2="Uma instalação On-line de um aplicativo não pode ser feita!"
 LOCAL3="Saindo agora..."
 LOCAL4="Esta configuração de servidor está disponível apenas para a linha estável do Debian/Sparky."
-LOCAL5="This is Sparky Active Directory post-install script which will install and set all you need to run AD Server."
-LOCAL6="Continue?"
+LOCAL5="Este é o script de instalação pós instalação do Sparky Active Directory que irá instalare configurar tudo que você precisa para rodar um servidor de arquivos AD simples."
+LOCAL6="Continuar?"
+LOCAL7="Instalador do Sparky Server"
 #
-LOCAL108="Qual nome este servidor deve ter? Se nada for digitado, o nome padrão sparkyserver será utilizado."
+LOCAL106="Gostaria de utilizar o nome de domínio já configurado?"
+LOCAL107="Digite o TLD desejado; dica host.lan.>> intranet << ; Se não digitar nenhum nome, o nome padrão intranet será utilizado."
+LOCAL108="Qual nome este servidor deve ter? Se nada for digitado, o nome padrão server será utilizado."
 LOCAL109="Existe mais de uma placa ou porta de rede para cascateamento?"
 LOCAL110="Este pacote não está disponível para esta versão de sistema."
 LOCAL111="Gostaria de instalar o suporte a No-Break (UPS)?"
@@ -21,8 +24,8 @@ LOCAL115="A configuração de rede será como a seguir, instalar desta forma ou 
 LOCAL116="Entre com o nome ou nomes das interfaces de rede, se desejar unir mais de um; separado por espaço!"
 LOCAL117="você TEM que configurar a rede manualmente!"
 LOCAL118="Gostaria de instalar o serviço de aviso sonoro com pcspeaker sparky-beep?"
-LOCAL119="Entre com o FQDN desejado; dica: host.lan.intranet"
-LOCAL120="Se nenhum nome for digitado, o nome padrão sparky.intranet será utilizado."
+LOCAL119="Entre com o nome de domínio desejado; dica: host.>> lan <<.intranet"
+LOCAL120="Se nenhum nome for digitado, o nome padrão sparky será utilizado."
 LOCAL121="Entre com a senha da conta do administrador padrão do samba, por favor, siga o padrão de criação de senha segura Microsoft."
 LOCAL122="Entre novamente com a mesma senha da conta do administrador do samba."
 LOCAL123="As senhas digitadas não são iguais! Vamos tentar novamente."
