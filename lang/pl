@@ -1,7 +1,7 @@
 # Polish localization file for Sparky AD Server.
 # Copyright 2018 Paweł "pavroo" Pijanowski <pavroo@onet.eu> 2018/10/28
 # Under the GNU GPL v2
-# Last update 2019/02/23 by Daniel
+# Last update 2019/02/23 by pavroo
 LOCAL1="Połączenie z internetem nieudane!"
 LOCAL2="Instalacja on-line zplikacji serwerowych może być przeprowadzona!"
 LOCAL3="Kończenie..."
@@ -10,9 +10,9 @@ LOCAL5="To jest Sparky Active Directory skrypt poinstalacyjny, który zainstaluj
 LOCAL6="Kontynuować?"
 LOCAL7="Sparky Server Installer"
 #
-LOCAL106="Would you like to use the already configured domain name?"
-LOCAL107="Enter the desired TLD name; hint: host.lan.>> intranet << ; If you do not enter any name, the default name intranet will be used."
-LOCAL108="Jaką nazwę powinien mieć ten serwer? podpowiedź: >> host <<.lan.intranet ;Jeśli nic nie zostanie wprowadzone, zostanie użyta domyślna nazwa server."
+LOCAL106="Czy chcesz użyć już skonfigurowanej nazwy domeny?"
+LOCAL107="Wpisz nazwę TLD; podpowiedź: host.lan.>> intranet << ; Jeśli nie wpiszesz żadnej nazwy, zostanie domyślnie użyta nazwa intranet."
+LOCAL108="Jaką nazwę powinien mieć ten serwer? podpowiedź: >> host <<.lan.intranet ; Jeśli nic nie zostanie wprowadzone, zostanie użyta domyślna nazwa server."
 LOCAL109="Czy istnieje więcej niż jedna karta sieciowa lub port do połączenia?"
 LOCAL110="Ten pakiet nie jest dostępny dla Twojej wersji systemu."
 LOCAL111="Czy chcesz zainstalować wsparcie dla zasilaczy awaryjnych (UPS)?"
