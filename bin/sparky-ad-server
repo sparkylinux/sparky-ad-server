@@ -6,7 +6,7 @@
 #
 # script deps: apt, bash, coreutils, dpkg, dialog, gawk, grep, hostname, nano, iputils-ping, sed, sparky-ntp-server
 #
-# Last update 2019/02/23 by Daniel
+# Last update 2019/02/24 by pavroo
 
 # checking to make sure the script is running with root privileges
 TESTROOT=`whoami`
@@ -103,7 +103,6 @@ if [  -f "$APTOPT" ]; then
 		sed -i '2 c\APT::Install-Suggests "false";' /etc/apt/apt.conf.d/80packages
 		sed -i '3 c\Aptitude::Recommends-Important "true";' /etc/apt/apt.conf.d/80packages
 		sed -i '4 c\Acquire::Languages { "$LOCAPT"; "none"; };' /etc/apt/apt.conf.d/80packages
-
 		echo "APTOPT=Apt behaviour changed" >> /var/log/sparky-ad-server.log
 fi
 
@@ -354,7 +353,7 @@ chattr +i /etc/sysctl.conf
 
 # Ask for host name or use the default;
 MYHOSTNAME=$(hostname)
-FILEHOSTNAME="cat /etc/hostname"
+FILEHOSTNAME=`cat /etc/hostname`
 if [ "$FILEHOSTNAME" = "live" ]; then
 		echo "Live enviroment! cannot continue"
 		exit 1
@@ -362,11 +361,11 @@ if [ "$FILEHOSTNAME" = "live" ]; then
 		MYHOSTNAME=""
 fi
 $DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL119\n$LOCAL120" $HEIGHT $WIDTH 2>/tmp/myhname.$$
-MYHNAME1='cat /etc/hostname'
+MYHNAME1=`cat /etc/hostname`
 	if [ "$MYHNAME1" != "" ]; then
 			MYHOSTNAME="$MYHNAME1"
 		else
-			MYHOSTNAME="sparkyserver"
+			MYHOSTNAME="sparky.server.intranet"
 	fi
 sed -i '1 c\$MYHOSTNAME' /etc/hostname
 rm -f /tmp/myhname.$$
@@ -398,8 +397,8 @@ if [ "$MYTLD" != "" ]; then
 fi
 rm -f /tmp/mytld.$$
 
-DOMAIN=$MYDOMAINNAME.$TLD
-MYFQDN=$MYHOSTNAME.$MYDOMAINNAME.$MYTLD
+DOMAIN="$MYDOMAINNAME.$TLD"
+MYFQDN="$MYHOSTNAME.$MYDOMAINNAME.$MYTLD"
 
 # Lookup the current loopback IP Address and strip it out of the result
 LOADDR4=$(/sbin/ifconfig lo | grep 'inet '| cut -d: -f2 | awk '{ print $2}')
@@ -475,16 +474,16 @@ if [ -f /etc/samba/smb.conf ]; then
 fi
 
 # Backup actual samba install
-	for f in /var/run/samba/*.tdb; do mv "$f" "$(echo "$f" | sed s/tdb/TDBoriginal/)"; done
-	for f in /var/run/samba/*.ldb; do mv "$f" "$(echo "$f" | sed s/ldb/LDBoriginal/)"; done
-	for f in /var/lib/samba/*.tdb; do mv "$f" "$(echo "$f" | sed s/tdb/TDBoriginal/)"; done
-	for f in /var/lib/samba/*.ldb; do mv "$f" "$(echo "$f" | sed s/ldb/LDBoriginal/)"; done
-	for f in /var/cache/samba*.tdb; do mv "$f" "$(echo "$f" | sed s/tdb/TDBoriginal/)"; done
-	for f in /var/cache/samba*.ldb; do mv "$f" "$(echo "$f" | sed s/ldb/LDBoriginal/)"; done
-	for f in /var/lib/samba/private*.tdb; do mv "$f" "$(echo "$f" | sed s/tdb/TDBoriginal/)"; done
-	for f in /var/lib/samba/private*.ldb; do mv "$f" "$(echo "$f" | sed s/ldb/LDBoriginal/)"; done
-	for f in /var/run/samba/*.tdb; do mv "$f" "$(echo "$f" | sed s/tdb/TDBoriginal/)"; done
-	for f in /var/run/samba/*.ldb; do mv "$f" "$(echo "$f" | sed s/ldb/LDBoriginal/)"; done
+	for f in /var/run/samba/*.tdb; do mv "$f" "`$(echo "$f" | sed s/tdb/TDBoriginal/)`"; done
+	for f in /var/run/samba/*.ldb; do mv "$f" "`$(echo "$f" | sed s/ldb/LDBoriginal/)`"; done
+	for f in /var/lib/samba/*.tdb; do mv "$f" "`$(echo "$f" | sed s/tdb/TDBoriginal/)`"; done
+	for f in /var/lib/samba/*.ldb; do mv "$f" "`$(echo "$f" | sed s/ldb/LDBoriginal/)`"; done
+	for f in /var/cache/samba*.tdb; do mv "$f" "`$(echo "$f" | sed s/tdb/TDBoriginal/)`"; done
+	for f in /var/cache/samba*.ldb; do mv "$f" "`$(echo "$f" | sed s/ldb/LDBoriginal/)`"; done
+	for f in /var/lib/samba/private*.tdb; do mv "$f" "`$(echo "$f" | sed s/tdb/TDBoriginal/)`"; done
+	for f in /var/lib/samba/private*.ldb; do mv "$f" "`$(echo "$f" | sed s/ldb/LDBoriginal/)`"; done
+	for f in /var/run/samba/*.tdb; do mv "$f" "`$(echo "$f" | sed s/tdb/TDBoriginal/)`"; done
+	for f in /var/run/samba/*.ldb; do mv "$f" "`$(echo "$f" | sed s/ldb/LDBoriginal/)`"; done
 #
 # Backup Kerberos file
 if [ -f /etc/krb5.conf ]; then
@@ -662,7 +661,7 @@ service ntp start
 systemctl enable samba-ad-dc.service
 
 ## Verify all services
-netstat –tulpn| egrep "smbd|samba"
+netstat –tulpn | egrep "smbd|samba"
 
 # Important step to grant network file service
 net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"
