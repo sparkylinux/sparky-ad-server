@@ -6,7 +6,7 @@
 #
 # script deps: apt, bash, coreutils, dpkg, dialog, gawk, grep, hostname, nano, iputils-ping, sed, sparky-ntp-server
 #
-# Last update 2019/02/25 19:40 by pavroo
+# Last update 2019/02/26 by pavroo
 
 # checking to make sure the script is running with root privileges
 TESTROOT=`whoami`
@@ -386,7 +386,7 @@ if [ "$FILEHOSTNAME" = "live" ]; then
 #else
 #	MYHOSTNAME=""
 fi
-$DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL119\n$LOCAL120" $HEIGHT $WIDTH 2>/tmp/myhname.$$
+$DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL108" $HEIGHT $WIDTH 2>/tmp/myhname.$$
 MYHNAME1=`cat /tmp/myhname.$$`
 #MYHNAME="$FILEHOSTNAME"
 if [ "$MYHNAME1" != "" ]; then
@@ -411,6 +411,8 @@ if [ "$MYDNAME0" = "(none)" ]; then
 			$DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL119\n$LOCAL120" $HEIGHT $WIDTH 2>/tmp/mydname.$$
 			MYDOMAINNAME=`cat /tmp/mydname.$$`
 		fi
+	else
+		MYDOMAINNAME="sparky"
 	fi
 else
 	MYDOMAINNAME="$MYDNAME0"
