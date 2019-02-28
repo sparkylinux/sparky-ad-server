@@ -653,6 +653,7 @@ chattr +i /etc/krb5.conf
 #sed -i '27 c\password        [success=2 default=ignore]      pam_winbind.so try_first_pass' /etc/pam.d/common-account
 
 mv /etc/nsswitch.conf /etc/nsswitch.conf.original
+touch /etc/nsswitch.conf
 cat > /etc/nsswitch.conf <<FOO
 # /etc/nsswitch.conf
 #
@@ -705,6 +706,8 @@ echo "===== ---------------- ======" >> /var/log/sparky-ad-server.log
 
 # Important step to grant network file service
 net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"
+chown root:"Domain Admins" $SMBROOT
+chmod 2775 $SMBROOT
 
 # Commented out as a better way was made avaliable
 	#chattr -i /etc/ntp.conf
@@ -797,6 +800,8 @@ if [ "$?" = "0" ]; then
 	elif [ "$DIRSELECT" != "" ]; then
 		if [ ! -d "$DIRSELECT" ]; then
 			mkdir -p $DIRSELECT
+			chown root:"Domain Admins" $DIRSELECT
+			chmod 2775 $DIRSELECT
 		fi
 		echo "[$DIRNAME]" >> /etc/samba/smb.conf
 		echo "	path = $DIRSELECT" >> /etc/samba/smb.conf
@@ -834,6 +839,8 @@ if [ "$CHECKSHARE0" != "" ]; then
 			elif [ "$DIRSELECT" != "" ]; then
 				if [ ! -d "$DIRSELECT" ]; then
 					mkdir -p $DIRSELECT
+					chown root:"Domain Admins" $DIRSELECT
+					chmod 2775 $DIRSELECT
 				fi
 				chown root:"Domain Admins" $DIRSELECT
 				chmod 2775 $DIRSELECT
