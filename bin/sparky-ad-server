@@ -394,7 +394,7 @@ if [ "$MYHNAME1" != "" ]; then
 else
 	MYHOSTNAME="server"
 fi
-sed -i '1 c\$MYHOSTNAME' /etc/hostname
+sed -i '1 c\'$MYHOSTNAME'' /etc/hostname
 rm -f /tmp/myhname.$$
 
 # Ask for domain name or use the default;
@@ -430,7 +430,7 @@ fi
 rm -f /tmp/mytld.$$
 
 DOMAIN="$MYDOMAINNAME.$TLD"
-MYFQDN="$MYHOSTNAME.$MYDOMAINNAME.$MYTLD"
+MYFQDN="$MYHOSTNAME.$MYDOMAINNAME.$TLD"
 
 # Lookup the current loopback IP Address and strip it out of the result
 LOADDR4=$(/sbin/ifconfig lo | grep 'inet '| cut -d: -f2 | awk '{ print $2}')
@@ -460,8 +460,8 @@ if [ -f /etc/hosts ]; then
 	# Change the way resolvconf works and lock the file
 	mv /etc/resolv.conf /etc/resolv.conf.original
 	touch /etc/resolv.conf
-	echo "domain $MYDOMAINNAME" >> /etc/resolv.conf
-	echo "search $MYDOMAINNAME" >> /etc/resolv.conf
+	echo "domain $DOMAIN" >> /etc/resolv.conf
+	echo "search $DOMAIN" >> /etc/resolv.conf
 	echo "nameserver 127.0.0.1" >> /etc/resolv.conf
 	echo "nameserver ::1" >> /etc/resolv.conf
 	echo "nameserver $IPADDR4" >> /etc/resolv.conf
@@ -586,20 +586,20 @@ rm -f /tmp/dnschoice.$$
 echo "MYDNS=$MYDNS" >> /var/log/sparky-ad-server.log
 
 # samba root user name
-TARGERUSER=`cat /var/log/sparky-ad-server.log | grep TARGETUSER | grep -v TARGETUSERGROUPS | cut -d"=" -f2`
-while [ "$ROOTSMB" = "$TARGETUSER" ]; do
-	$DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL130" $HEIGHT $WIDTH 2>/tmp/smbroot.$$
-	ROOTSMB=`cat /tmp/smbroot.$$`
-	if [ "$ROOTSMB" = "" ]; then
-		SMBROOT="sparkysmb"
-	else
-		SMBROOT="$ROOTSMB"
-	fi
-	rm -f /tmp/smbroot.$$
+#TARGERUSER=`cat /var/log/sparky-ad-server.log | grep TARGETUSER | grep -v TARGETUSERGROUPS | cut -d"=" -f2`
+#while [ "$ROOTSMB" = "$TARGETUSER" ]; do
+$DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL130" $HEIGHT $WIDTH 2>/tmp/smbroot.$$
+ROOTSMB=`cat /tmp/smbroot.$$`
+if [ "$ROOTSMB" = "" ]; then
+	SMBROOT="sparkysmb"
+else
+	SMBROOT="$ROOTSMB"
+fi
+rm -f /tmp/smbroot.$$
 	#if [ "$ROOTSMB" = "$TARGETUSER" ]; then
 		#$DIALOG $TITLE"$TITLETEXT" $MSGBOX "$LOCAL131" $HEIGHT $WIDTH
 	#fi
-done
+#done
 echo "SMBROOT=$SMBROOT" >> /var/log/sparky-ad-server.log
 rm -f /tmp/smbroot.$$
 
@@ -694,7 +694,14 @@ service ntp start
 systemctl enable samba-ad-dc.service
 
 ## Verify all services
-netstat –tulpn | egrep "smbd|samba"
+echo "===== VERIFY SETUP ======" >> /var/log/sparky-ad-server.log
+netstat –tulpn | egrep "smbd|samba" >> /var/log/sparky-ad-server.log
+ps ax | egrep "samba|smbd|nmbd|winbindd" >> /var/log/sparky-ad-server.log
+
+## Verify domain version
+echo "===== DOMAIN LEVEL TEST ======" >> /var/log/sparky-ad-server.log
+samba-tool domain level show >> /var/log/sparky-ad-server.log
+echo "===== ---------------- ======" >> /var/log/sparky-ad-server.log
 
 # Important step to grant network file service
 net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"
@@ -855,9 +862,6 @@ else
 	echo "no more shares"
 fi
 smbcontrol all reload-config
-
-## Verify domain version
-samba-tool domain level show
 
 ## commented postmail configuration
 #postconf -e "myorigin = $MYDOMAINNAME"
