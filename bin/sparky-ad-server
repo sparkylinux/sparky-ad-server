@@ -6,7 +6,7 @@
 #
 # script deps: apt, bash, coreutils, dpkg, dialog, gawk, grep, hostname, nano, iputils-ping, sed, sparky-ntp-server
 #
-# Last update 2019/02/26 by pavroo
+# Last update 2019/03/01 by pavroo
 
 # checking to make sure the script is running with root privileges
 TESTROOT=`whoami`
@@ -377,18 +377,14 @@ chattr +i /etc/sysctl.conf
 ### step 5: Pre samba configuration, backup and changes to hosts file ###
 
 # Ask for host name or use the default;
-#MYHOSTNAME=$(hostname)
 FILEHOSTNAME=`cat /etc/hostname`
 if [ "$FILEHOSTNAME" = "live" ]; then
 	echo "This is Live enviroment! cannot continue, exiting."
 	echo "STEP4=This is Live enviroment! cannot continue, exiting." >> /var/log/sparky-ad-server.log
 	exit 1
-#else
-#	MYHOSTNAME=""
 fi
 $DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL108" $HEIGHT $WIDTH 2>/tmp/myhname.$$
 MYHNAME1=`cat /tmp/myhname.$$`
-#MYHNAME="$FILEHOSTNAME"
 if [ "$MYHNAME1" != "" ]; then
 	MYHOSTNAME="$MYHNAME1"
 else
