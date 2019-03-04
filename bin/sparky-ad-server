@@ -6,7 +6,7 @@
 #
 # script deps: apt, bash, coreutils, dpkg, dialog, gawk, grep, hostname, nano, iputils-ping, sed, sparky-ntp-server
 #
-# Last update 2019/03/01 by pavroo
+# Last update 2019/03/04 by Daniel
 
 # checking to make sure the script is running with root privileges
 TESTROOT=`whoami`
@@ -626,7 +626,7 @@ chmod 750 /var/lib/samba/ntp_signd/
 systemctl daemon-reload
 
 # Do the provision
-samba-tool domain provision --realm=$DOMAIN --domain=${MYDOMAINNAME^^} --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="template homedir=/home/$SMBROOT/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="max wins ttl=518400"
+samba-tool domain provision --realm=$DOMAIN --domain=${MYDOMAINNAME^^} --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="netbios name=${MYHOSTNAME^^}" --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind enum users=yes" --option="winbind enum groups=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="template homedir=/home/$SMBROOT/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="max wins ttl=518400"
 
 #Linking samba generated kerberos file to systemwide
 ln -sf /var/lib/samba/private/krb5.conf /etc/krb5.conf
@@ -674,7 +674,7 @@ netgroup:       nis
 FOO
 
 # Add domain admins to sudo
-echo "%domain\ admins@$MYDOMAINNAME ALL=(ALL:ALL) ALL" | tee -a /etc/sudoers
+echo "%$UPDOMAIN\\domain\ admins ALL=(ALL:ALL) ALL" | tee -a /etc/sudoers
 echo "Set group_source dynamic" >> /etc/sudo.conf
 
 # Add home directories
