@@ -43,4 +43,4 @@ LOCAL135="Enter a name of shared folder. If you do not use any name, a sparkydir
 LOCAL136="Reqired set of server targeted packages HAVE NOT been installed!"
 LOCAL137="Would you like to install and update Clamav antivirus? (recommended, but not required)"
 LOCAL138="Would you like to install netdata monitoring interface? (recommended but not required)"
-LOCAL139="Would you like to install webmin management interface? (recommended but not required)"
+LOCAL139="Would you like to install webmin management interface? (recommended and default management interface, only say no if you know what you're doeing.)"

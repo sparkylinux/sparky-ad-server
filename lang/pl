@@ -43,4 +43,4 @@ LOCAL135="Wpisz nazwę folderu, który udostępniasz. Jeśli nie wpiszesz żadne
 LOCAL136="Wymagany zestaw pakietów o przeznaczeniu serwerowym NIE ZOSTAŁ zainstalowany!"
 LOCAL137="Czy chcesz zainstalować i zaktualizować program anywirusowy Clamav? (zalecane, lecz niewymagane)"
 LOCAL138="Czy chcesz zainstalować netdata do monitorowania interfejsu sieciowego? (zalecane, lecz niewymagane)"
-LOCAL139="Czy chcesz zainstalować webmin do zarządzania serwerem? (zalecane, lecz niewymagane)"
+LOCAL139="Czy chcesz zainstalować webmin do zarządzania serwerem? (recommended and default management interface, only say no if you know what you're doeing.)"

@@ -44,4 +44,4 @@ LOCAL135="Entre com o nome do compartilhamento. Se não digitar nenhum nome, um 
 LOCAL136="Os pacotes requeridos para o servidor NÃO FORAM instalados!"
 LOCAL137="Gostaria de instalar e atualizar o anti vírus Clamav? (recomendado, não requerido)"
 LOCAL138="Gostaria de instalar a interface de monitoramento netdata? (recomendado, não requerido)"
-LOCAL139="Gostaria de instalar a interface de gerenciamento webmin? (recomendado, não requerido)"
+LOCAL139="Gostaria de instalar a interface de gerenciamento webmin? (recomendado e é a interface padrão, apenas responda não se souber o que está fazendo.)"
