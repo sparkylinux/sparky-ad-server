@@ -84,6 +84,10 @@ elif [ "$DEBIANVERCHECK10" != "" ]; then
 	exit 1
 fi
 
+# add google DNSs to ensure resolving if firewall already configured to point AD as DNS
+	echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+	echo "nameserver 2001:4860:4860::8888" >> /etc/resolv.conf
+
 # checking connection
 PINGTEST=$(ping -c 1 debian.org | grep [0-9])
 if [ "$PINGTEST" = "" ]; then
@@ -163,37 +167,6 @@ else
 fi
 
 ### end of step 1 ###
-
-### step 2: enable UPS support ###
-
-# enable support to UPS via nut
-$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL111" $HEIGHT $WIDTH
-if [ "$?" = "0" ]; then
-	apt-get install nut nut-client -y
-	systemctl enable nut-monitor.service
-	echo "UPS support installed"
-	echo "STEP2=UPS support installed" >> /var/log/sparky-ad-server.log
-else
-	systemctl disable nut-monitor.service
-	echo "UPS support not installed"
-	echo "STEP2=UPS support not installed" >> /var/log/sparky-ad-server.log
-fi
-
-### end of step 2 ###
-
-### step 3: install beep support via sparky-beep ###
-
-$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL118" $HEIGHT $WIDTH
-if [ "$?" = "0" ]; then
-	apt-get install sparky-beep -y
-	echo "STEP3=Beep support installed"
-	echo "STEP3=Beep support installed" >> /var/log/sparky-ad-server.log
-else
-	echo "STEP3=Beep support not installed"
-	echo "STEP3=Beep support not installed" >> /var/log/sparky-ad-server.log
-fi
-
-### end of step 3 ###
 
 ### step 4: networking ###
 
@@ -576,7 +549,7 @@ MYDNS=`cat /tmp/dnschoice.$$`
 if [ "$MYDNS" != "" ]; then
 	MYDNS="$MYDNS"
 else
-	MYDNS="8.8.8.8"
+	MYDNS="8.8.8.8 2001:4860:4860::8888"
 fi
 rm -f /tmp/dnschoice.$$
 echo "MYDNS=$MYDNS" >> /var/log/sparky-ad-server.log
@@ -904,6 +877,23 @@ fi
 
 ### end of step 8 ###
 
+### step 2: enable UPS support ###
+
+# enable support to UPS via nut
+$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL111" $HEIGHT $WIDTH
+if [ "$?" = "0" ]; then
+	apt-get install nut nut-client -y
+	systemctl enable nut-monitor.service
+	echo "UPS support installed"
+	echo "STEP2=UPS support installed" >> /var/log/sparky-ad-server.log
+else
+	systemctl disable nut-monitor.service
+	echo "UPS support not installed"
+	echo "STEP2=UPS support not installed" >> /var/log/sparky-ad-server.log
+fi
+
+### end of step 2 ###
+
 ### step 9: webmin ###
 
 ## install webmin, if desired ##
@@ -917,6 +907,20 @@ else
 fi
 
 ### end of step 9 ###
+
+### step 3: install beep support via sparky-beep ###
+
+$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL118" $HEIGHT $WIDTH
+if [ "$?" = "0" ]; then
+	apt-get install sparky-beep -y
+	echo "STEP3=Beep support installed"
+	echo "STEP3=Beep support installed" >> /var/log/sparky-ad-server.log
+else
+	echo "STEP3=Beep support not installed"
+	echo "STEP3=Beep support not installed" >> /var/log/sparky-ad-server.log
+fi
+
+### end of step 3 ###
 
 echo "End of AD Server Installer log" >> /var/log/sparky-ad-server.log
 echo "==============================================================" >> /var/log/sparky-ad-server.log
