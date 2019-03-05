@@ -84,7 +84,8 @@ elif [ "$DEBIANVERCHECK10" != "" ]; then
 	exit 1
 fi
 
-# add google DNSs to ensure resolving if firewall already configured to point AD as DNS
+# add google DNSs to ensure resolving if firewall already configured to point AD as DNS or install stopped at middle
+	chattr -i /etc/resolv.conf
 	echo "nameserver 8.8.8.8" >> /etc/resolv.conf
 	echo "nameserver 2001:4860:4860::8888" >> /etc/resolv.conf
 
@@ -471,7 +472,7 @@ systemctl disable samba.service
 
 # Backup actual Samba config file
 if [ -f /etc/samba/smb.conf ]; then
-	chattr -i /etc/samba/smb.conf
+	#chattr -i /etc/samba/smb.conf
 	mv /etc/samba/smb.conf /etc/samba/smb.conf.original
 fi
 
@@ -593,13 +594,14 @@ if [ -f /etc/sparky-ntp.conf ]; then
 	ln -s /etc/sparky-ntp.conf /etc/ntp.conf
 	chattr +i /etc/ntp.conf
 fi
-chown root:ntp /var/lib/samba/ntp_signd/
-chgrp ntp /var/lib/samba/ntp_signd
-chmod 750 /var/lib/samba/ntp_signd/
-systemctl daemon-reload
 
 # Do the provision
 samba-tool domain provision --realm=$DOMAIN --domain=${MYDOMAINNAME^^} --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="netbios name=${MYHOSTNAME^^}" --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind enum users=yes" --option="winbind enum groups=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="template homedir=/home/$SMBROOT/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="max wins ttl=518400"
+
+# finish ntp configuration after samba created libs
+chown root:ntp /var/lib/samba/ntp_signd/
+chgrp ntp /var/lib/samba/ntp_signd
+chmod 750 /var/lib/samba/ntp_signd/
 
 #Linking samba generated kerberos file to systemwide
 ln -sf /var/lib/samba/private/krb5.conf /etc/krb5.conf
@@ -617,7 +619,6 @@ chattr +i /etc/krb5.conf
 #fi
 #ldconfig
 # Enable AD users to logon
-#echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0022" | tee -a /etc/pam.d/common-session
 # Enable AD Users and Groups avaliable locally
 #sed -i '27 c\password        [success=2 default=ignore]      pam_winbind.so try_first_pass' /etc/pam.d/common-account
 
@@ -650,30 +651,34 @@ FOO
 echo "%$UPDOMAIN\\domain\ admins ALL=(ALL:ALL) ALL" | tee -a /etc/sudoers
 echo "Set group_source dynamic" >> /etc/sudo.conf
 
-# Add home directories
+# Add home directories and enable auto creation of user directories uppon logon using /etc/skel model
+echo " " | tee -a /etc/samba/smb.conf
 echo "[homes]" | tee -a /etc/samba/smb.conf
 echo "        path = /home/$SMBROOT/%U" | tee -a /etc/samba/smb.conf
 echo "        read only - No" | tee -a /etc/samba/smb.conf
 echo "        writeable = Yes" | tee -a /etc/samba/smb.conf
 echo "        browsable = No" | tee -a /etc/samba/smb.conf
+echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0022" | tee -a /etc/pam.d/common-session
 
-# Enable and start samba ad dc service
+# Enable and start all samba ad dc related services and reload all config before making it
+systemctl daemon-reload
 systemctl unmask samba-ad-dc.service
 systemctl start samba-ad-dc.service
 service ntp start
 systemctl enable samba-ad-dc.service
+systemctl enable ntp.service
 
 ## Verify all services
 echo "===== VERIFY SETUP ======" >> /var/log/sparky-ad-server.log
-netstat –tulpn | egrep "smbd|samba" >> /var/log/sparky-ad-server.log
-ps ax | egrep "samba|smbd|nmbd|winbindd" >> /var/log/sparky-ad-server.log
+netstat –tulpn | egrep "smbd|samba|ntp" >> /var/log/sparky-ad-server.log
+ps ax | egrep "samba|smbd|nmbd|winbindd|ntp" >> /var/log/sparky-ad-server.log
 
 ## Verify domain version
 echo "===== DOMAIN LEVEL TEST ======" >> /var/log/sparky-ad-server.log
 samba-tool domain level show >> /var/log/sparky-ad-server.log
 echo "===== ---------------- ======" >> /var/log/sparky-ad-server.log
 
-# Important step to grant network file service
+# Important step to grant network file service and ajust shared home folders permissions
 net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"
 chown root:"Domain Admins" $SMBROOT
 chmod 2775 $SMBROOT
@@ -777,7 +782,7 @@ if [ "$?" = "0" ]; then
 		echo "	read only = No" >> /etc/samba/smb.conf
 		echo "" >> /etc/samba/smb.conf
 		# lock config file
-		chattr +i /etc/samba/smb.conf
+		# chattr +i /etc/samba/smb.conf
 		echo "share yes" >> /tmp/dirshare.$$
 	fi
 	echo "SHARED DIRA=$DIRSELECT" >> /var/log/sparky-ad-server.log
@@ -814,13 +819,13 @@ if [ "$CHECKSHARE0" != "" ]; then
 				chown root:"Domain Admins" $DIRSELECT
 				chmod 2775 $DIRSELECT
 				# unlock config file
-				chattr -i /etc/samba/smb.conf
+				# chattr -i /etc/samba/smb.conf
 				echo "[$DIRNAME]" >> /etc/samba/smb.conf
 				echo "	path = $DIRSELECT" >> /etc/samba/smb.conf
 				echo "	read only = No" >> /etc/samba/smb.conf
 				echo "" >> /etc/samba/smb.conf
 				# lock config file
-				chattr +i /etc/samba/smb.conf
+				# chattr +i /etc/samba/smb.conf
 				echo "share yes" >> /tmp/dirshare.$$
 			fi
 			echo "SHARED DIRB=$DIRSELECT" >> /var/log/sparky-ad-server.log
