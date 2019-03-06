@@ -144,14 +144,14 @@ if [ "$ARCH64" != "" ]; then
 		dpkg --add-architecture i386
 	fi
 	apt-get update
-	apt-get install sparky-meta-server -y
+	apt-get install sparky-meta-server krb5-user -y
 	apt-get update
 	update-command-not-found
 	SERVPACK="64bit"
 else
 	# 32 bit
 	apt-get update
-	apt-get install sparky-meta-server -y
+	apt-get install sparky-meta-server krb5-user -y
 	apt-get update
 	update-command-not-found
 	SERVPACK="32bit"
@@ -619,6 +619,8 @@ if [ -d /home/$SMBROOT ]; then
 else
 	mkdir -p /home/log/samba
 	mkdir -p /home/$SMBROOT
+	mkdir -p /home/ADBKP/precopy
+	mkdir -p /home/ADBKP/samba_backup
 fi
 
 # Ajust ntp_signd (commented lines were changed to external file linkage)
@@ -635,7 +637,7 @@ if [ -f /etc/sparky-ntp.conf ]; then
 fi
 
 # Do the provision
-samba-tool domain provision --realm=$DOMAIN --domain=${MYDOMAINNAME^^} --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="netbios name=${MYHOSTNAME^^}" --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind enum users=yes" --option="winbind enum groups=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="template homedir=/home/$SMBROOT/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="max wins ttl=518400" --option="local master=yes" --option="preferred master=yes"
+samba-tool domain provision --realm=$DOMAIN --domain=${MYDOMAINNAME^^} --host-name=$MYHOSTNAME --host-ip=$IPADDR4 --host-ip6=$IPADDR6 --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="netbios name=${MYHOSTNAME^^}" --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind enum users=yes" --option="winbind enum groups=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="template homedir=/home/$SMBROOT/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="max wins ttl=518400" --option="local master=yes" --option="add user script=/usr/sbin/useradd -m '%u'" --option="delete user script=/usr/sbin/userdel -r '%u'" --option="name resolve order=wins bcast" --option="tls enabled=yes" --option="tls keyfile=tls/key.pem" --option="tls certfile=tls/cert.pem" --option="tls cafile=tls/ca.pem"
 
 # finish ntp configuration after samba created libs
 chown root:ntp /var/lib/samba/ntp_signd/
@@ -716,11 +718,15 @@ echo "        writeable = Yes" | tee -a /etc/samba/smb.conf
 echo "        browsable = Yes" | tee -a /etc/samba/smb.conf
 echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0022" | tee -a /etc/pam.d/common-session
 
+# Link backup script to cron weekly
+ln -s /usr/bin/sparky-ad-sambabkp /etc/cron.weekly
+
 # Reload Samba config, enable and start all samba ad dc related services and reload all config before making it
 smbcontrol all reload-config
 systemctl daemon-reload
 systemctl unmask samba-ad-dc.service
 systemctl start samba-ad-dc.service
+install -d /var/lib/samba/ntp_signd
 service ntp start
 systemctl enable samba-ad-dc.service
 systemctl enable ntp.service
@@ -736,6 +742,8 @@ samba-tool domain level show >> /var/log/sparky-ad-server.log
 host -t SRV _ldap._tcp.$MYDOMAINNAME. >> /var/log/sparky-ad-server.log
 host -t SRV _kerberos._udp.$MYDOMAINNAME. >> /var/log/sparky-ad-server.log
 host -t A $MYFQDN. >> /var/log/sparky-ad-server.log
+klist >> /var/log/sparky-ad-server.log
+smbclient //$MYHOSTNAME/netlogon -U Administrator -c 'ls' $SMBPASS >> /var/log/sparky-ad-server.log
 echo "===== ---------------- ======" >> /var/log/sparky-ad-server.log
 
 # Important step to grant network file service and ajust shared home folders permissions
@@ -744,6 +752,18 @@ chown root:"Domain Admins" /home/$SMBROOT
 chmod 2775 /home/$SMBROOT
 setfacl -d -m g:domain\ admins:rwX /home/$SMBROOT
 setfacl -d -m g:domain\ users:rw /home/$SMBROOT
+
+# Reverse lookup zone creation
+# Discover final ip zone
+NETWORK1=`ifconfig | grep inet | head -n1 | cut -f2 -d":" | awk '{print $2}' | cut -f1 -d"."`
+NETWORK2=`ifconfig | grep inet | head -n1 | cut -f2 -d":" | awk '{print $2}' | cut -f2 -d"."`
+NETWORK3=`ifconfig | grep inet | head -n1 | cut -f2 -d":" | awk '{print $2}' | cut -f3 -d"."`
+NETWORK4=`ifconfig | grep inet | head -n1 | cut -f2 -d":" | awk '{print $2}' | cut -f4 -d"."`
+NETADD=$NETWORK1.$NETWORK2.$NETWORK3.$NETWORK4
+
+samba-tool dns add $MYHOSTNAME $MYDOMAINNAME $MYHOSTNAME A $NETADD -U Administrator --password=$SMBPASS
+samba-tool dns zonecreate $MYDOMAINNAME $NETWORK3.$NETWORK2.$NETWORK1.in-addr.arpa -U Administrator --password=$SMBPASS
+samba-tool dns add $MYHOSTNAME $NETWORK3.$NETWORK2.$NETWORK1.in-addr.arpa $NETWORK4 PTR $MYTLD -U Administrator --password=$SMBPASS
 
 # shared folders
 # ask if want to share other than deafault home share
