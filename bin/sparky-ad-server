@@ -621,6 +621,7 @@ else
 	mkdir -p /home/$SMBROOT
 	mkdir -p /home/ADBKP/precopy
 	mkdir -p /home/ADBKP/samba_backup
+	mkdir -p /home/$SMBROOT/UserFiles
 fi
 
 # Ajust ntp_signd (commented lines were changed to external file linkage)
@@ -637,7 +638,7 @@ if [ -f /etc/sparky-ntp.conf ]; then
 fi
 
 # Do the provision
-samba-tool domain provision --realm=$DOMAIN --domain=${MYDOMAINNAME^^} --host-name=$MYHOSTNAME --host-ip=$IPADDR4 --host-ip6=$IPADDR6 --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="netbios name=${MYHOSTNAME^^}" --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind enum users=yes" --option="winbind enum groups=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="template homedir=/home/$SMBROOT/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="max wins ttl=518400" --option="local master=yes" --option="add user script=/usr/sbin/useradd -m '%u'" --option="delete user script=/usr/sbin/userdel -r '%u'" --option="name resolve order=wins bcast" --option="tls enabled=yes" --option="tls keyfile=tls/key.pem" --option="tls certfile=tls/cert.pem" --option="tls cafile=tls/ca.pem"
+samba-tool domain provision --realm=$DOMAIN --domain=${MYDOMAINNAME^^} --host-name=$MYHOSTNAME --host-ip=$IPADDR4 --host-ip6=$IPADDR6 --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="netbios name=${MYHOSTNAME^^}" --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind enum users=yes" --option="winbind enum groups=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="template homedir=/home/$SMBROOT/UserFiles/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="max wins ttl=518400" --option="local master=yes" --option="add user script=/usr/sbin/useradd -m '%u'" --option="delete user script=/usr/sbin/userdel -r '%u'" --option="name resolve order=wins bcast" --option="tls enabled=yes" --option="tls keyfile=tls/key.pem" --option="tls certfile=tls/cert.pem" --option="tls cafile=tls/ca.pem" --option="logon script=logon.bat"
 
 # finish ntp configuration after samba created libs
 chown root:ntp /var/lib/samba/ntp_signd/
@@ -706,17 +707,38 @@ echo "        browseable = No" | tee -a /etc/samba/smb.conf
 # Add home directories, default share and enable auto creation of user directories uppon logon using /etc/skel model
 echo " " | tee -a /etc/samba/smb.conf
 echo "[homes]" | tee -a /etc/samba/smb.conf
-echo "        path = /home/$SMBROOT/%U" | tee -a /etc/samba/smb.conf
+echo "        path = /home/$SMBROOT/UserFiles/%U" | tee -a /etc/samba/smb.conf
 echo "        read only - No" | tee -a /etc/samba/smb.conf
 echo "        writeable = Yes" | tee -a /etc/samba/smb.conf
 echo "        browsable = No" | tee -a /etc/samba/smb.conf
 echo " " | tee -a /etc/samba/smb.conf
-echo "[${MYHOSTNAME^^}]" | tee -a /etc/samba/smb.conf
+echo "[${SMBROOT^^}]" | tee -a /etc/samba/smb.conf
 echo "        path = /home/$SMBROOT" | tee -a /etc/samba/smb.conf
 echo "        read only - No" | tee -a /etc/samba/smb.conf
 echo "        writeable = Yes" | tee -a /etc/samba/smb.conf
 echo "        browsable = Yes" | tee -a /etc/samba/smb.conf
 echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0022" | tee -a /etc/pam.d/common-session
+
+# Create logon.bat script to auto create user folder on server if not present
+UPHN=${MYHOSTNAME^^}
+UPSMBROOT=${SMBROOT^^}
+cat > /var/lib/samba/sysvol/$MYDOMAINNAME/scripts/logon.bat << FOO
+@echo off
+setlocal EnableDelayedExpansion
+net time \\$UPHN /set /yes
+if not exist "\\$UPHN\$UPSMBROOT\UserFiles\%USERNAME%" (
+  mkdir "\\$UPHN\$UPSMBROOT\UserFiles\%USERNAME%"
+  if "!errorlevel!" EQU "0" (
+    echo Folder created successfully
+  ) else (
+    echo Error while creating folder
+  )
+) else (
+  echo Folder already exists
+)
+net use X: \\$UPHN\$UPSMBROOT\UserFiles\%USERNAME%
+exit
+FOO
 
 # Link backup script to cron weekly
 ln -s /usr/bin/sparky-ad-sambabkp /etc/cron.weekly
@@ -748,10 +770,17 @@ echo "===== ---------------- ======" >> /var/log/sparky-ad-server.log
 
 # Important step to grant network file service and ajust shared home folders permissions
 net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"
-chown root:"Domain Admins" /home/$SMBROOT
-chmod 2775 /home/$SMBROOT
-setfacl -d -m g:domain\ admins:rwX /home/$SMBROOT
+chown root:"Domain Admins" /var/lib/samba/sysvol/$MYDOMAINNAME/scripts
+chmod 2775 /var/lib/samba/sysvol/$MYDOMAINNAME/scripts
+chown -R root:"Domain Admins" /home/$SMBROOT
+chmod -R 2775 /home/$SMBROOT
+chown -R root:"Domain Users" /home/$SMBROOT/UserFiles
+chmod -R 2775 /home/$SMBROOT/UserFiles
+setfacl -d -m g:domain\ admins:rwx  /var/lib/samba/sysvol/$MYDOMAINNAME/scripts
+setfacl -d -m g:domain\ users:rw  /var/lib/samba/sysvol/$MYDOMAINNAME/scripts
+setfacl -d -m g:domain\ admins:rwx /home/$SMBROOT
 setfacl -d -m g:domain\ users:rw /home/$SMBROOT
+setfacl -d -m g:domain\ users:rwx /home/$SMBROOT/UserFiles
 
 # Reverse lookup zone creation
 # Discover final ip zone
