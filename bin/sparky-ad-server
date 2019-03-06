@@ -167,6 +167,21 @@ else
 	exit 1
 fi
 
+# check for acl capable file system at home directory
+touch /home/test.txt
+ACLCHK='setfacl -m g:adm:rwx /home/test.txt'
+if [ "$ACLCHK" != "" ]; then
+	echo "$ACLCHK"
+	echo "Your home folder partition do not have acl enabled, trying to enable..."
+	echo "STEP1=No home ACL enabled, try auto enable" >>  >> /var/log/sparky-ad-server.log
+	mount /home -o remount,acl
+	# need to script something to add acl to fstab of home partition or root if no separated home
+else
+	echo "Your home folder partition already have acl support, continue install."
+	echo "STEP1=Already had home ACL enabled" >>  >> /var/log/sparky-ad-server.log
+fi
+rm -rf /home/test.txt
+
 ### end of step 1 ###
 
 ### step 4: networking ###
@@ -693,8 +708,9 @@ echo "===== ---------------- ======" >> /var/log/sparky-ad-server.log
 
 # Important step to grant network file service and ajust shared home folders permissions
 net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"
-chown root:"Domain Admins" $SMBROOT
-chmod 2775 $SMBROOT
+chown root:"Domain Admins" /home/$SMBROOT
+chmod 2775 /home/$SMBROOT
+setfacl -d -m g:domain\ users:rw /home/$SMBROOT
 
 # shared folders
 # ask if want to share other than deafault home share
@@ -732,6 +748,7 @@ if [ "$?" = "0" ]; then
 	# changes to be apllied any dir (existant or non)
 	chown root:"Domain Admins" $DIRSELECT
 	chmod 2775 $DIRSELECT
+	setfacl -d -m g:domain\ users:rw $DIRSELECT
 	echo " " >> /etc/samba/smb.conf
 	echo "[$DIRNAME]" >> /etc/samba/smb.conf
 	echo "	path = $DIRSELECT" >> /etc/samba/smb.conf
@@ -775,6 +792,7 @@ if [ "$?" = "0" ]; then
 				# changes to be apllied any dir (existant or non)
 				chown root:"Domain Admins" $DIRSELECT
 				chmod 2775 $DIRSELECT
+				setfacl -d -m g:domain\ users:rw $DIRSELECT
 				echo "[$DIRNAME]" >> /etc/samba/smb.conf
 				echo "	path = $DIRSELECT" >> /etc/samba/smb.conf
 				echo "	read only = No" >> /etc/samba/smb.conf
