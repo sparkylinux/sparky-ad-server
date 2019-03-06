@@ -45,3 +45,4 @@ LOCAL136="Les paquets requis pour le serveur demandé n'ont pas été installés
 LOCAL137="Would you like to install and update Clamav antivirus? (recommended, but not required)"
 LOCAL138="Would you like to install netdata monitoring interface? (recommended but not required)"
 LOCAL139="Would you like to install webmin management interface? (recommended and default management interface, only say no if you know what you're doeing.)"
+LOCAL140="Select yes to select an existant folder or no to create a new one"

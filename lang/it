@@ -33,7 +33,7 @@ LOCAL124="Inserisci l'indirizzo di almeno un server DNS per indirizzare la conne
 #non e' farina del sacco mio o di pavel....
 LOCAL125="Se non inserisci alcun DNS, 8.8.8.8 sara' usato come default"
 LOCAL126="Inserisci il nome del sito (non usare caratteri speciali); suggerimento: puo' essere il nome di una citta'."
-LOCAL127="Se non inserisci alcun nome, allora London sara' utilizzato di default."
+LOCAL127="Se non inserisci alcun nome, allora Earth sara' utilizzato di default."
 #non e' farina del sacco mio o di pavel....
 LOCAL128="Vuoi condividere le cartelle su questo server?\nLa prossima finestra ti permettera' di configurare il percorso delle cartelle condivise. Tutte le cartelle e le sotto-cartelle saranno create, se non dovessero esistere.\nNON utilizzare il nome di amministratore di samba che hai creato prima."
 LOCAL129="Inserisci il percorso alla cartella condivisa nella finestra qui sotto."
@@ -47,3 +47,4 @@ LOCAL136="I set di pacchetti per server selezionati NON sono sono stati installa
 LOCAL137="Would you like to install and update Clamav antivirus? (recommended, but not required)"
 LOCAL138="Would you like to install netdata monitoring interface? (recommended but not required)"
 LOCAL139="Would you like to install webmin management interface? (recommended and default management interface, only say no if you know what you're doeing.)"
+LOCAL140="Select yes to select an existant folder or no to create a new one"

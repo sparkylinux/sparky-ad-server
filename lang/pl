@@ -44,3 +44,4 @@ LOCAL136="Wymagany zestaw pakietów o przeznaczeniu serwerowym NIE ZOSTAŁ zains
 LOCAL137="Czy chcesz zainstalować i zaktualizować program anywirusowy Clamav? (zalecane, lecz niewymagane)"
 LOCAL138="Czy chcesz zainstalować netdata do monitorowania interfejsu sieciowego? (zalecane, lecz niewymagane)"
 LOCAL139="Czy chcesz zainstalować webmin do zarządzania serwerem? (recommended and default management interface, only say no if you know what you're doeing.)"
+LOCAL140="Select yes to select an existant folder or no to create a new one"

@@ -683,88 +683,43 @@ net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDO
 chown root:"Domain Admins" $SMBROOT
 chmod 2775 $SMBROOT
 
-# Commented out as a better way was made avaliable
-	#chattr -i /etc/ntp.conf
-	#rm /etc/ntp.conf
-	#CHECKNTP=`echo APTLOC | grep br`
-	#if [ "$CHECKNTP" != "br" ]; then
-	#sed -i '20 c\pool gps.ntp.br iburst' /etc/ntp.conf
-	#sed -i '21 c\pool a.ntp.br iburst' /etc/ntp.conf
-	#sed -i '22 c\pool b.ntp.br iburst' /etc/ntp.conf
-	#sed -i '23 c\pool c.ntp.briburst' /etc/ntp.conf
-	# else
-	#sed -i -e 's/0.debian.pool.ntp.org/gps.ntp.br/g' /etc/ntp.conf
-	#sed -i -e 's/1.debian.pool.ntp.org/a.ntp.br/g' /etc/ntp.conf
-	#sed -i -e 's/2.debian.pool.ntp.org/b.ntp.br/g' /etc/ntp.conf
-	#sed -i -e 's/3.debian.pool.ntp.org/c.ntp.br/g' /etc/ntp.conf
-	#fi
+# configure sysvol and netlogon to be hidden at /etc/samba/smb.conf
+sed -i "/sysvol/d" /etc/samba/smb.conf
+sed -i "/read only/d" /etc/samba/smb.conf
+sed -i "/netlogon/d" /etc/samba/smb.conf
+echo "[netlogon]" >> /etc/samba/smb.conf
+echo "        path = /var/lib/samba/sysvol/$MYDOMAINNAME/scripts" >> /etc/samba/smb.conf
+echo "        read only = No" >> /etc/samba/smb.conf
+echo "        browseable = No" >> /etc/samba/smb.conf
+echo " " >> /etc/samba/smb.conf
+echo "[sysvol]" >> /etc/samba/smb.conf
+echo "        path = /var/lib/samba/sysvol" >> /etc/samba/smb.conf
+echo "        read only = No" >> /etc/samba/smb.conf
+echo "        browseable = No" >> /etc/samba/smb.conf
 
-	#sed -i '35 c\restrict -4 default kod notrap nomodify nopeer noquery mssntp' /etc/ntp.conf
-	#sed -i '36 c\restrict -6 default kod notrap nomodify nopeer noquery mssntp' /etc/ntp.conf
-	#sed -i -e 's/noquery limited/noquery mssntp/g' /etc/ntp.conf
-	#sed -i -e 's/noquery limited/noquery mssntp/g' /etc/ntp.conf
-	#sed -i '52 c\broadcast $BROADCAST1' /etc/ntp.conf
-	#sed -i -e 's/#broadcast /broadcast /g' /etc/ntp.conf
-	#sed -i -e 's/broadcast [0-9]*.[0-9]*.[0-9]*.[0-9]*/broadcast $BROADCAST1/g' /etc/ntp.conf
-	#echo "ntpsigndsocket /var/lib/samba/ntp_signd" >> /etc/ntp.conf
-	#echo "listen on $IPADDR4" >> /etc/ntp.conf
-	#echo "listen on $IPADDR6" >> /etc/ntp.conf
-# configure samba config - commented as this should be a reference, provision already create this file
-	#UPMYHOSTNAME=`echo $MYHOSTNAME | tr [a-z] [A-Z]`
-	#UPMYFQDN=`echo $MYHOSTNAME.$MYDOMAINNAME | tr [a-z] [A-Z]`
-	#UPDOMAIN=`echo $DOMAIN | tr [a-z] [A-Z]`
-	#cat > /etc/samba/smb.conf << FOO
-	# Global parameters
-	#[global]
-	#        netbios name = $UPMYHOSTNAME
-	#        realm = $UPMYFQDN
-	#        workgroup = $UPDOMAIN
-	#        dns forwarder = $MYDNS
-	#        log file = /home/log/samba/%m.log
-	#        log level = 1
-	#        max log size = 100000
-	#        server role = active directory domain controller
-	#        template homedir = /home/$SMBROOT/%U
-	#        template shell = /bin/bash
-	#        winbind nss info = rfc2307
-	#        winbind use default domain = Yes
-	#        idmap_ldb:use rfc2307 = yes
-	#        store dos attributes = Yes
-	#        map acl inherit = Yes
-	#        access based share enum = Yes
-	#        acl group control = Yes
-	#       vfs objects = acl_xattr
-	#
-	#[netlogon]
-	#        path = /var/lib/samba/sysvol/$MYDOMAINNAME/scripts
-	#        read only = No
-	#        browseable = No
-	#
-	#[sysvol]
-	#        path = /var/lib/samba/sysvol
-	#        read only = No
-	#        browseable = No
-	#	
-	#[homes]
-	#       path = /home/$SMBROOT/%U
-	#        read only - No
-	#        writeable = Yes
-	#        browsable = No
-	#
-#FOO
+# shared folders
 
-# shared folder
+# ask if want to share other than deafault home share
 $DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL128" $HEIGHT $WIDTH 
 if [ "$?" = "0" ]; then
-	$DIALOG $BACKTITLE"$LOCAL129" $TITLE"$TITLETEXT" $DSELECT / $HEIGHT2 $WIDTH2 2>/tmp/sharedir.$$
-	DIRSELECT=`cat /tmp/sharedir.$$`
-	$DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL135" $HEIGHT2 $WIDTH2 2>/tmp/namedir.$$
-	DIRNAME=`cat /tmp/namedir.$$`
-	if [ "$DIRNAME" != "" ]; then
-		DIRNAME=$DIRNAME
+	
+	# ask if want to share existant or new folder
+	$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL140" $HEIGHT $WIDTH 
+	if [ "$?" = "0" ]; then
+		# select an already existant folder to share
+		$DIALOG $BACKTITLE"$LOCAL129" $TITLE"$TITLETEXT" $DSELECT / $HEIGHT2 $WIDTH2 2>/tmp/sharedir.$$
+		DIRSELECT=`cat /tmp/sharedir.$$`
 	else
-		DIRNAME="sparkydir.$$"
+		# enter a name or use default
+		$DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL135" $HEIGHT2 $WIDTH2 2>/tmp/namedir.$$
+		DIRNAME=`cat /tmp/namedir.$$`
+		if [ "$DIRNAME" != "" ]; then
+			DIRNAME=$DIRNAME
+		else
+			DIRNAME="sparkydir.$$"
+		fi
 	fi
+	# check smbroot folder location and empty share location than create the share
 	if [ "$DIRSELECT" = "$SMBROOT" ]; then
 		$DIALOG $TITLE"$TITLETEXT" $MSGBOX "$LOCAL132" $HEIGHT $WIDTH
 		echo "share yes" >> /tmp/dirshare.$$
@@ -774,73 +729,76 @@ if [ "$?" = "0" ]; then
 	elif [ "$DIRSELECT" != "" ]; then
 		if [ ! -d "$DIRSELECT" ]; then
 			mkdir -p $DIRSELECT
-			chown root:"Domain Admins" $DIRSELECT
-			chmod 2775 $DIRSELECT
 		fi
-		echo "[$DIRNAME]" >> /etc/samba/smb.conf
-		echo "	path = $DIRSELECT" >> /etc/samba/smb.conf
-		echo "	read only = No" >> /etc/samba/smb.conf
-		echo "" >> /etc/samba/smb.conf
-		# lock config file
-		# chattr +i /etc/samba/smb.conf
-		echo "share yes" >> /tmp/dirshare.$$
 	fi
+	# changes to be apllied any dir (existant or non)
+	chown root:"Domain Admins" $DIRSELECT
+	chmod 2775 $DIRSELECT
+	echo " " >> /etc/samba/smb.conf
+	echo "[$DIRNAME]" >> /etc/samba/smb.conf
+	echo "	path = $DIRSELECT" >> /etc/samba/smb.conf
+	echo "	read only = No" >> /etc/samba/smb.conf
+	# lock config file
+	# chattr +i /etc/samba/smb.conf
+	echo "share yes" >> /tmp/dirshare.$$
 	echo "SHARED DIRA=$DIRSELECT" >> /var/log/sparky-ad-server.log
 	echo "SHARED NAMEA=$DIRNAME" >> /var/log/sparky-ad-server.log
-else
-	echo "" >> /tmp/dirshare.$$
-	echo "SHARED DIRA=" >> /var/log/sparky-ad-server.log
-	echo "SHARED NAMEA=" >> /var/log/sparky-ad-server.log
-fi
 
-# more shared folders
-CHECKSHARE0=`cat /tmp/dirshare.$$ | grep yes`
-rm -f /tmp/dirshare.$$
-if [ "$CHECKSHARE0" != "" ]; then
-	while [ "$CHECKSHARE" != "" ]; do
-		$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL134" $HEIGHT $WIDTH
-		if [ "$?" = "0" ]; then
-			$DIALOG $BACKTITLE"$LOCAL129" $TITLE"$TITLETEXT" $DSELECT / $HEIGHT2 $WIDTH2 2>/tmp/sharedir.$$
-			DIRSELECT=`cat /tmp/sharedir.$$`
-			$DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL135" $HEIGHT2 $WIDTH2 2>/tmp/namedir.$$
-			DIRNAME=`cat /tmp/namedir.$$`
-			if [ "$DIRSELECT" = "$SMBROOT" ]; then
-				$DIALOG $TITLE"$TITLETEXT" $MSGBOX "$LOCAL132" $HEIGHT $WIDTH
-				echo "share yes" >> /tmp/dirshare.$$
-			elif [ "$DIRSELECT" = "" ]; then
-				$DIALOG $TITLE"$TITLETEXT" $MSGBOX "$LOCAL133" $HEIGHT $WIDTH
-				echo "share yes" >> /tmp/dirshare.$$
-			elif [ "$DIRSELECT" != "" ]; then
-				if [ ! -d "$DIRSELECT" ]; then
-					mkdir -p $DIRSELECT
-					chown root:"Domain Admins" $DIRSELECT
-					chmod 2775 $DIRSELECT
+	# more shared folders
+	CHECKSHARE0=`cat /tmp/dirshare.$$ | grep yes`
+	rm -f /tmp/dirshare.$$
+	if [ "$CHECKSHARE0" != "" ]; then
+		while [ "$CHECKSHARE" != "" ]; do
+			# ask if want to share more folders
+			$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL134" $HEIGHT $WIDTH
+			if [ "$?" = "0" ]; then
+				# ask if want to share existant or new folder
+				$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL140" $HEIGHT $WIDTH 
+				if [ "$?" = "0" ]; then
+					# select an already existant folder to share
+					$DIALOG $BACKTITLE"$LOCAL129" $TITLE"$TITLETEXT" $DSELECT / $HEIGHT2 $WIDTH2 2>/tmp/sharedir.$$
+					DIRSELECT=`cat /tmp/sharedir.$$`
+				else
+					# enter a name or use default
+					$DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL135" $HEIGHT2 $WIDTH2 2>/tmp/namedir.$$
+					DIRNAME=`cat /tmp/namedir.$$`
 				fi
+				if [ "$DIRSELECT" = "$SMBROOT" ]; then
+					$DIALOG $TITLE"$TITLETEXT" $MSGBOX "$LOCAL132" $HEIGHT $WIDTH
+					echo "share yes" >> /tmp/dirshare.$$
+				elif [ "$DIRSELECT" = "" ]; then
+					$DIALOG $TITLE"$TITLETEXT" $MSGBOX "$LOCAL133" $HEIGHT $WIDTH
+					echo "share yes" >> /tmp/dirshare.$$
+				elif [ "$DIRSELECT" != "" ]; then
+					if [ ! -d "$DIRSELECT" ]; then
+						mkdir -p $DIRSELECT
+					fi
+				fi
+				# changes to be apllied any dir (existant or non)
 				chown root:"Domain Admins" $DIRSELECT
 				chmod 2775 $DIRSELECT
-				# unlock config file
-				# chattr -i /etc/samba/smb.conf
 				echo "[$DIRNAME]" >> /etc/samba/smb.conf
 				echo "	path = $DIRSELECT" >> /etc/samba/smb.conf
 				echo "	read only = No" >> /etc/samba/smb.conf
 				echo "" >> /etc/samba/smb.conf
-				# lock config file
-				# chattr +i /etc/samba/smb.conf
 				echo "share yes" >> /tmp/dirshare.$$
+				echo "SHARED DIRB=$DIRSELECT" >> /var/log/sparky-ad-server.log
+				echo "SHARED NAMEB=$DIRNAME" >> /var/log/sparky-ad-server.log
+			else
+				echo "" >> /tmp/dirshare.$$
+				echo "SHARED DIRB=" >> /var/log/sparky-ad-server.log
+				echo "SHARED NAMEB=" >> /var/log/sparky-ad-server.log
 			fi
-			echo "SHARED DIRB=$DIRSELECT" >> /var/log/sparky-ad-server.log
-			echo "SHARED NAMEB=$DIRNAME" >> /var/log/sparky-ad-server.log
-		else
-			echo "" >> /tmp/dirshare.$$
-			echo "SHARED DIRB=" >> /var/log/sparky-ad-server.log
-			echo "SHARED NAMEB=" >> /var/log/sparky-ad-server.log
-		fi
-		CHECKSHARE=`cat /tmp/dirshare.$$`
+			CHECKSHARE=`cat /tmp/dirshare.$$`
+			rm /tmp/dirshare.$$
+		done
 		rm /tmp/dirshare.$$
-	done
-	rm /tmp/dirshare.$$
+	else
+		echo "no more second shares"
+	fi
 else
-	echo "no more shares"
+	rm /tmp/dirshare.$$
+	echo "No more shares other than default" >> /var/log/sparky-ad-server.log
 fi
 smbcontrol all reload-config
 
@@ -905,7 +863,7 @@ fi
 # question the install nedded
 $DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL138" $HEIGHT $WIDTH
 if [ "$?" = "0" ]; then
-	apt-get install strongswan-starter webmin -y
+	apt-get install strongswan-starter webmin libauthen-libwrap-perl -y
 	echo "STEP9=WebMin manager installed" >> /var/log/sparky-ad-server.log
 else
 	echo "STEP9=WebMin manager not installed" >> /var/log/sparky-ad-server.log
