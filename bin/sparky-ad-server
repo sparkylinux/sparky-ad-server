@@ -174,10 +174,11 @@ if [ "$ACLCHK" != "" ]; then
 	echo "$ACLCHK"
 	echo "Your home folder partition do not have acl enabled, trying to enable..."
 	echo "STEP1=No home ACL enabled, try auto enable" >>  >> /var/log/sparky-ad-server.log
-	mount /home -o remount,acl
+	# tune2fs -o acl,user_xattr /dev/
+	# mount /home -o remount,acl
 	# need to script something to add acl to fstab of home partition or root if no separated home
 else
-	echo "Your home folder partition already have acl support, continue install."
+	echo "Home folder partition ACL support detected, continue install."
 	echo "STEP1=Already had home ACL enabled" >>  >> /var/log/sparky-ad-server.log
 fi
 rm -rf /home/test.txt
@@ -229,6 +230,8 @@ else
 		$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL113 $LOCAL117" $HEIGHT $WIDTH
 		if [ "$?" = "0" ]; then
 			nano /etc/network/interfaces
+			/etc/init.d/networking stop
+			/etc/init.d/networking start
 		else
 			echo "Cannot install, no network, exiting."
 			echo "STEP4=Cannot install, no network, exiting." >> /var/log/sparky-ad-server.log
@@ -270,7 +273,7 @@ if [ "$NETCONF" = "OK" ]; then
 	$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL109" $HEIGHT $WIDTH
 	if [ "$?" = "0" ]; then
 		## Do Interface bonding
-cat > /etc/network/interfaces << FOO
+		cat > /etc/network/interfaces << FOO
 # Static IP address
 auto bond0
 	iface bond0 inet static inet6 dhcp
@@ -286,26 +289,31 @@ auto bond0
 	broadcast $BROADCAST0
 	gateway $GATEWAY0
 FOO
+		/etc/init.d/networking stop
+		/etc/init.d/networking start
 		echo "STEP4=networking & bonding auto set up" >> /var/log/sparky-ad-server.log
 		cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
-		# check or change network settings
-		$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL112" $HEIGHT $WIDTH
-		if [ "$?" = "0" ]; then
-			nano /etc/network/interfaces
-			echo "STEP4=networking & bonding manually fixed" >> /var/log/sparky-ad-server.log
-			cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
-		else
-			if [ "$NETCONF" = "failed" ]; then
-				echo "STEP4=networking & bonding autoconfiguration failed so editing interfaces manually" >> /var/log/sparky-ad-server.log
-				nano /etc/network/interfaces
-			fi
-		fi
-
-			echo "Bonding setup with more than one card or port" >> /var/log/sparky-ad-server.log
-			cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
+	# check or change network settings
+	$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL112" $HEIGHT $WIDTH
+	if [ "$?" = "0" ]; then
+		nano /etc/network/interfaces
+		/etc/init.d/networking stop
+		/etc/init.d/networking start
+		echo "STEP4=networking & bonding manually fixed" >> /var/log/sparky-ad-server.log
+		cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
 	else
+		if [ "$NETCONF" = "failed" ]; then
+			echo "STEP4=networking & bonding autoconfiguration failed so editing interfaces manually" >> /var/log/sparky-ad-server.log
+			nano /etc/network/interfaces
+			/etc/init.d/networking stop
+			/etc/init.d/networking start
+		fi
+	fi
+		echo "Bonding setup with more than one card or port" >> /var/log/sparky-ad-server.log
+		cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
+else
 		## Single network card
-cat > /etc/network/interfaces << FOO
+		cat > /etc/network/interfaces << FOO
 # Static IP address
 auto $INETDEV0
 iface $INETDEV0 inet static inet6 dhcp
@@ -315,24 +323,27 @@ iface $INETDEV0 inet static inet6 dhcp
 	broadcast $BROADCAST0
 	gateway $GATEWAY0
 FOO
+		/etc/init.d/networking stop
+		/etc/init.d/networking start
 		echo "STEP4=SINGLE networking auto set up" >> /var/log/sparky-ad-server.log
 		cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
-
 		# check or change network settings
 		$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL112" $HEIGHT $WIDTH
 		if [ "$?" = "0" ]; then
 			nano /etc/network/interfaces
+			/etc/init.d/networking stop
+			/etc/init.d/networking start
 			echo "STEP4=SINGLE networking manually fixed" >> /var/log/sparky-ad-server.log
 			cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
 		else
 			if [ "$NETCONF" = "failed" ]; then
 				echo "STEP4=SINGLE networking autoconfiguration failed so editing interfaces manually" >> /var/log/sparky-ad-server.log
 				nano /etc/network/interfaces
+				/etc/init.d/networking stop
+				/etc/init.d/networking start
 				cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
 			fi
-
 		fi
-
 		echo "Single network card setup" >> /var/log/sparky-ad-server.log
 		cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
 	fi
@@ -341,12 +352,24 @@ else
 	$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL113 $LOCAL117" $HEIGHT $WIDTH
 	if [ "$?" = "0" ]; then
 		nano /etc/network/interfaces
+		/etc/init.d/networking stop
+		/etc/init.d/networking start
 		echo "STEP4=no eth devices found, set interfaces manually." >> /var/log/sparky-ad-server.log
 	else
 		echo "STEP4=no eth devices found, not set interfaces manually, exiting."
 		echo "STEP4=no eth devices found, not set interfaces manually, exiting." >> /var/log/sparky-ad-server.log
 		exit 1
 	fi
+fi
+# checking connection
+PINGTEST=$(ping -c 1 debian.org | grep [0-9])
+if [ "$PINGTEST" = "" ]; then
+	$DIALOG $TITLE"$TITLETEXT" $MSGBOX "$LOCAL1\n$LOCAL2\n\n$LOCAL3" $HEIGHT $WIDTH
+	echo "POST NETCONF PING TEST=Internet connection not active, please connect to install from internet" >> /var/log/sparky-ad-server.log
+	exit 1
+else
+	echo "POST NETCONF PING TEST=Internet connection OK"
+	echo "POST NETCONF PING TEST=Internet connection OK" >> /var/log/sparky-ad-server.log
 fi
 
 ### end of bonding setup ###
@@ -427,7 +450,7 @@ IPADDR6=$(/sbin/ifconfig | grep 'inet6 '| grep -v '::1' | awk '{ print $2}')
 
 # backup /etc/hosts and create a new one
 if [ -f /etc/hosts ]; then
-	cp /etc/hosts /etc/hosts.original
+	mv /etc/hosts /etc/hosts.original
 	touch /etc/hosts
 
 	#  Add the loopback IP Address
@@ -447,8 +470,8 @@ if [ -f /etc/hosts ]; then
 	touch /etc/resolv.conf
 	echo "domain $DOMAIN" >> /etc/resolv.conf
 	echo "search $DOMAIN" >> /etc/resolv.conf
-	echo "nameserver 127.0.0.1" >> /etc/resolv.conf
-	echo "nameserver ::1" >> /etc/resolv.conf
+	# echo "nameserver 127.0.0.1" >> /etc/resolv.conf
+	# echo "nameserver ::1" >> /etc/resolv.conf
 	echo "nameserver $IPADDR4" >> /etc/resolv.conf
 	echo "nameserver $IPADDR6" >> /etc/resolv.conf
 	domainname $MYDOMAINNAME
@@ -563,6 +586,7 @@ echo "MYSITENAME=$MYSITENAME" >> /var/log/sparky-ad-server.log
 $DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL124\n$LOCAL125" $HEIGHT $WIDTH 2>/tmp/dnschoice.$$
 MYDNS=`cat /tmp/dnschoice.$$`
 if [ "$MYDNS" != "" ]; then
+	# must elaborate a dns resolv test so dns works after domain provision
 	MYDNS="$MYDNS"
 else
 	MYDNS="8.8.8.8 2001:4860:4860::8888"
@@ -611,7 +635,7 @@ if [ -f /etc/sparky-ntp.conf ]; then
 fi
 
 # Do the provision
-samba-tool domain provision --realm=$DOMAIN --domain=${MYDOMAINNAME^^} --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="netbios name=${MYHOSTNAME^^}" --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind enum users=yes" --option="winbind enum groups=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="template homedir=/home/$SMBROOT/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="max wins ttl=518400"
+samba-tool domain provision --realm=$DOMAIN --domain=${MYDOMAINNAME^^} --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="netbios name=${MYHOSTNAME^^}" --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind enum users=yes" --option="winbind enum groups=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="template homedir=/home/$SMBROOT/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="max wins ttl=518400" --option="local master=yes" --option="preferred master=yes"
 
 # finish ntp configuration after samba created libs
 chown root:ntp /var/lib/samba/ntp_signd/
@@ -622,29 +646,27 @@ chmod 750 /var/lib/samba/ntp_signd/
 ln -sf /var/lib/samba/private/krb5.conf /etc/krb5.conf
 chattr +i /etc/krb5.conf
 
-### Steps commented commented are intented to client version
+### Steps commented are intented to client version
 # Link libnss and reload
-#if [ "$ARCH64" != "" ]; then
-#	ln -s /lib/x86_64-linux-gnu/libnss_winbind.so.2 /lib/x86_64-linux-gnu/libnss_winbind.so
-#elif [ "$ARCH32" != "" ]; then
-#	ln -s /lib/i386-linux-gnu/libnss_winbind.so.2 /lib/i386-linux-gnu/libnss_winbind.so
-#else
-#	echo "your arch not supported... exiting..."
-#	exit 1
-#fi
-#ldconfig
+if [ "$ARCH64" != "" ]; then
+	ln -s /lib/x86_64-linux-gnu/libnss_winbind.so.2 /lib/x86_64-linux-gnu/libnss_winbind.so
+elif [ "$ARCH32" != "" ]; then
+	ln -s /lib/i386-linux-gnu/libnss_winbind.so.2 /lib/i386-linux-gnu/libnss_winbind.so
+else
+	echo "your arch not supported... exiting..."
+	exit 1
+fi
+ldconfig
 # Enable AD users to logon
 # Enable AD Users and Groups avaliable locally
 #sed -i '27 c\password        [success=2 default=ignore]      pam_winbind.so try_first_pass' /etc/pam.d/common-account
 
 mv /etc/nsswitch.conf /etc/nsswitch.conf.original
 touch /etc/nsswitch.conf
-cat > /etc/nsswitch.conf <<FOO
+cat > /etc/nsswitch.conf << FOO
 # /etc/nsswitch.conf
 #
-# Example configuration of GNU Name Service Switch functionality.
-# If you have the `glibc-doc-reference' and `info' packages installed, try:
-# `info libc "Name Service Switch"' for information about this file.
+# Samba GNU Name Service Switch functionality integration
 
 passwd:         compat winbind
 group:          compat winbind
@@ -679,16 +701,23 @@ echo "[sysvol]" | tee -a /etc/samba/smb.conf
 echo "        path = /var/lib/samba/sysvol" | tee -a /etc/samba/smb.conf
 echo "        read only = No" | tee -a /etc/samba/smb.conf
 echo "        browseable = No" | tee -a /etc/samba/smb.conf
-# Add home directories and enable auto creation of user directories uppon logon using /etc/skel model
+# Add home directories, default share and enable auto creation of user directories uppon logon using /etc/skel model
 echo " " | tee -a /etc/samba/smb.conf
 echo "[homes]" | tee -a /etc/samba/smb.conf
 echo "        path = /home/$SMBROOT/%U" | tee -a /etc/samba/smb.conf
 echo "        read only - No" | tee -a /etc/samba/smb.conf
 echo "        writeable = Yes" | tee -a /etc/samba/smb.conf
 echo "        browsable = No" | tee -a /etc/samba/smb.conf
+echo " " | tee -a /etc/samba/smb.conf
+echo "[${MYHOSTNAME^^}]" | tee -a /etc/samba/smb.conf
+echo "        path = /home/$SMBROOT" | tee -a /etc/samba/smb.conf
+echo "        read only - No" | tee -a /etc/samba/smb.conf
+echo "        writeable = Yes" | tee -a /etc/samba/smb.conf
+echo "        browsable = Yes" | tee -a /etc/samba/smb.conf
 echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0022" | tee -a /etc/pam.d/common-session
 
-# Enable and start all samba ad dc related services and reload all config before making it
+# Reload Samba config, enable and start all samba ad dc related services and reload all config before making it
+smbcontrol all reload-config
 systemctl daemon-reload
 systemctl unmask samba-ad-dc.service
 systemctl start samba-ad-dc.service
@@ -701,15 +730,19 @@ echo "===== VERIFY SETUP ======" >> /var/log/sparky-ad-server.log
 netstat –tulpn | egrep "smbd|samba|ntp" >> /var/log/sparky-ad-server.log
 ps ax | egrep "samba|smbd|nmbd|winbindd|ntp" >> /var/log/sparky-ad-server.log
 
-## Verify domain version
+## Verify domain records and basic services
 echo "===== DOMAIN LEVEL TEST ======" >> /var/log/sparky-ad-server.log
 samba-tool domain level show >> /var/log/sparky-ad-server.log
+host -t SRV _ldap._tcp.$MYDOMAINNAME. >> /var/log/sparky-ad-server.log
+host -t SRV _kerberos._udp.$MYDOMAINNAME. >> /var/log/sparky-ad-server.log
+host -t A $MYFQDN. >> /var/log/sparky-ad-server.log
 echo "===== ---------------- ======" >> /var/log/sparky-ad-server.log
 
 # Important step to grant network file service and ajust shared home folders permissions
 net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"
 chown root:"Domain Admins" /home/$SMBROOT
 chmod 2775 /home/$SMBROOT
+setfacl -d -m g:domain\ admins:rwX /home/$SMBROOT
 setfacl -d -m g:domain\ users:rw /home/$SMBROOT
 
 # shared folders
@@ -748,6 +781,7 @@ if [ "$?" = "0" ]; then
 	# changes to be apllied any dir (existant or non)
 	chown root:"Domain Admins" $DIRSELECT
 	chmod 2775 $DIRSELECT
+	setfacl -d -m g:domain\ admins:rwX $DIRSELECT
 	setfacl -d -m g:domain\ users:rw $DIRSELECT
 	echo " " >> /etc/samba/smb.conf
 	echo "[$DIRNAME]" >> /etc/samba/smb.conf
@@ -792,6 +826,7 @@ if [ "$?" = "0" ]; then
 				# changes to be apllied any dir (existant or non)
 				chown root:"Domain Admins" $DIRSELECT
 				chmod 2775 $DIRSELECT
+				setfacl -d -m g:domain\ admins:rwX $DIRSELECT
 				setfacl -d -m g:domain\ users:rw $DIRSELECT
 				echo "[$DIRNAME]" >> /etc/samba/smb.conf
 				echo "	path = $DIRSELECT" >> /etc/samba/smb.conf
