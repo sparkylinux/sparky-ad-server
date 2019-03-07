@@ -696,7 +696,7 @@ sed -i "/sysvol/d" /etc/samba/smb.conf
 sed -i "/read only/d" /etc/samba/smb.conf
 sed -i "/netlogon/d" /etc/samba/smb.conf
 echo "[netlogon]" | tee -a /etc/samba/smb.conf
-echo "        path = /var/lib/samba/sysvol/$MYDOMAINNAME/scripts" | tee -a /etc/samba/smb.conf
+echo "        path = /var/lib/samba/sysvol/$DOMAIN/scripts" | tee -a /etc/samba/smb.conf
 echo "        read only = No" | tee -a /etc/samba/smb.conf
 echo "        browseable = No" | tee -a /etc/samba/smb.conf
 echo " " | tee -a /etc/samba/smb.conf
