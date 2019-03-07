@@ -37,9 +37,17 @@ DAYS=90				# Set default retention period.
 DIRS="private samba sysvol"
 
 systemctl stop samba-ad-dc.service
+# Create pre-copy
+# cp -rfvp  $PRECOPY
 cp -rfvp $SYSVOL $PRECOPY
 cp -rfvp $PRIVATE $PRECOPY
 cp -rfvp $SMBCONF $PRECOPY
+cp -rfvp /etc/samba/smb.conf $PRECOPY
+cp -rfvp /var/lib/samba/private/krb5.conf $PRECOPY
+cp -rfvp /etc/nsswitch.conf $PRECOPY
+
+systemctl start samba-ad-dc.service
+
 
 if [ -n "$1" ] && [ "$1" = "-h" -o "$1" = "--usage" ]; then
 	echo "samba_backup [provisiondir] [destinationdir] [retpd]"
@@ -104,4 +112,3 @@ for d in $DIRS;do
 done
 
 find $WHERE -name "samba4_*bz2" -mtime +$DAYS -exec rm  {} \;
-systemctl start samba-ad-dc.service

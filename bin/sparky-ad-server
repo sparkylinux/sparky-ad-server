@@ -638,7 +638,7 @@ if [ -f /etc/sparky-ntp.conf ]; then
 fi
 
 # Do the provision
-samba-tool domain provision --realm=$DOMAIN --domain=${MYDOMAINNAME^^} --host-name=$MYHOSTNAME --host-ip=$IPADDR4 --host-ip6=$IPADDR6 --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="netbios name=${MYHOSTNAME^^}" --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind enum users=yes" --option="winbind enum groups=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="template homedir=/home/$SMBROOT/UserFiles/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="max wins ttl=518400" --option="local master=yes" --option="add user script=/usr/sbin/useradd -m '%u'" --option="delete user script=/usr/sbin/userdel -r '%u'" --option="name resolve order=wins bcast" --option="tls enabled=yes" --option="tls keyfile=tls/key.pem" --option="tls certfile=tls/cert.pem" --option="tls cafile=tls/ca.pem" --option="logon script=logon.bat"
+samba-tool domain provision --realm=$DOMAIN --domain=${MYDOMAINNAME^^} --host-name=$MYHOSTNAME --host-ip=$IPADDR4 --host-ip6=$IPADDR6 --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="netbios name=${MYHOSTNAME^^}" --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind enum users=yes" --option="winbind enum groups=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="hide unreadable=yes" --option="hide unwriteable files=no" --option="template homedir=/home/$SMBROOT/UserFiles/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="max wins ttl=518400" --option="local master=yes" --option="add user script=/usr/sbin/useradd -m '%u'" --option="delete user script=/usr/sbin/userdel -r '%u'" --option="name resolve order=wins bcast" --option="tls enabled=yes" --option="tls keyfile=tls/key.pem" --option="tls certfile=tls/cert.pem" --option="tls cafile=tls/ca.pem" --option="logon script=logon.bat" --option="allow dns updates=nonsecure and secure"  --option="winbind refresh tickets=yes" --option="winbind refresh tickets=rfc2307" --option="server signing=auto" --option="idmap config=ad"
 
 # finish ntp configuration after samba created libs
 chown root:ntp /var/lib/samba/ntp_signd/
@@ -687,7 +687,7 @@ rpc:            db files
 netgroup:       nis
 FOO
 
-# Add domain admins to sudo
+# Add domain admins to sudoers
 echo "%$UPDOMAIN\\domain\ admins ALL=(ALL:ALL) ALL" | tee -a /etc/sudoers
 echo "Set group_source dynamic" >> /etc/sudo.conf
 
@@ -749,7 +749,9 @@ systemctl daemon-reload
 systemctl unmask samba-ad-dc.service
 systemctl start samba-ad-dc.service
 install -d /var/lib/samba/ntp_signd
+ntpdate -dquv 0.pool.ntp.org
 service ntp start
+hwclock --systohc
 systemctl enable samba-ad-dc.service
 systemctl enable ntp.service
 
@@ -769,7 +771,8 @@ smbclient //$MYHOSTNAME/netlogon -U Administrator -c 'ls' $SMBPASS >> /var/log/s
 echo "===== ---------------- ======" >> /var/log/sparky-ad-server.log
 
 # Important step to grant network file service and ajust shared home folders permissions
-net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"
+usermod -aG sudo $UPDOMAIN\administrator
+net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"%$SMBPASS
 chown root:"Domain Admins" /var/lib/samba/sysvol/$MYDOMAINNAME/scripts
 chmod 2775 /var/lib/samba/sysvol/$MYDOMAINNAME/scripts
 chown -R root:"Domain Admins" /home/$SMBROOT
@@ -793,6 +796,7 @@ NETADD=$NETWORK1.$NETWORK2.$NETWORK3.$NETWORK4
 samba-tool dns add $MYHOSTNAME $MYDOMAINNAME $MYHOSTNAME A $NETADD -U Administrator --password=$SMBPASS
 samba-tool dns zonecreate $MYDOMAINNAME $NETWORK3.$NETWORK2.$NETWORK1.in-addr.arpa -U Administrator --password=$SMBPASS
 samba-tool dns add $MYHOSTNAME $NETWORK3.$NETWORK2.$NETWORK1.in-addr.arpa $NETWORK4 PTR $MYTLD -U Administrator --password=$SMBPASS
+samba_dnsupdate --use-file=/var/lib/samba/private/dns.keytab --verbose --all-names
 
 # shared folders
 # ask if want to share other than deafault home share
@@ -916,9 +920,12 @@ echo "STEP6=finished..." >> /var/log/sparky-ad-server.log
 # question the install nedded
 $DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL137" $HEIGHT $WIDTH
 if [ "$?" = "0" ]; then
-	apt-get install clamav clamav-freshclam clamav-milter libc-icap-mod-clamav python-pyclamav libclamav-client-perl whois logwatch libc-icap-mod-clamav python-pyclamav libclamav-client-perl -y
-	killall freshclam
+	apt-get install cabextract clamav clamav-base clamav-daemon clamav-freshclam clamdscan clamfs clamav-milter clamav-testfiles clamav-unofficial-sigs libc-icap-mod-clamav python-pyclamav libclamav-client-perl whois logwatch libc-icap-mod-clamav libclamunrar7 python-pyclamav libclamav-client-perl p7zip unzip unrar -y
+	killall freshclam clamav-unofficial-sigs
+	clamav-unofficial-sigs
 	freshclam
+	service clamav-daemon restart
+	service clamav-freshclam restart
 	echo "STEP7=ClamAv installed" >> /var/log/sparky-ad-server.log
 else
 	echo "STEP7=ClamAv not installed" >> /var/log/sparky-ad-server.log
