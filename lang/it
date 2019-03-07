@@ -2,7 +2,7 @@
 # Copyright 2018 Carlo Ttroiani <abbassolafrangetta@gmail.com> 2018/11/22
 # Rilasciato sotto licenza GNU GPL v2
 # Ultimo aggiornamento: 2018/11/23 by Carlo
-# Last update 2019/02/21 by pavroo
+# Last update 2019/03/07 by pavroo
 LOCAL1="Test della connessione internet fallito!"
 LOCAL2="L'installazione on-line di un'applicazione server NON puo' essere fatta!"
 LOCAL3="Sto uscendo..."
@@ -46,5 +46,5 @@ LOCAL135="Inserisci il nome della cartella condivisa. Se non inserisci alcun nom
 LOCAL136="I set di pacchetti per server selezionati NON sono sono stati installati!"
 LOCAL137="Would you like to install and update Clamav antivirus? (recommended, but not required)"
 LOCAL138="Would you like to install netdata monitoring interface? (recommended but not required)"
-LOCAL139="Would you like to install webmin management interface? (recommended and default management interface, only say no if you know what you're doeing.)"
+LOCAL139="Would you like to install webmin management interface? (recommended as default management interface, only say no if you know what you're doing.)"
 LOCAL140="Select yes to select an existant folder or no to create a new one"

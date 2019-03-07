@@ -2,7 +2,7 @@
 # Copyright 2016 hiver <hiver@club-internet.fr> 2018/11/12
 # Sous licence GNU GPL v2
 # Dernière mise à jour 2018/11/12
-# Last update 2019/02/23 by Daniel
+# Last update 2019/03/07 by pavroo
 LOCAL1="Le test de connexion à internet a échoué!"
 LOCAL2="L'installation en ligne de l'application ne peut être faite!"
 LOCAL3="Sortie à présent..."
@@ -44,5 +44,5 @@ LOCAL135="Entrer le nom du répertoire partagé. Si vous n'en entrez aucun, un s
 LOCAL136="Les paquets requis pour le serveur demandé n'ont pas été installés!"
 LOCAL137="Would you like to install and update Clamav antivirus? (recommended, but not required)"
 LOCAL138="Would you like to install netdata monitoring interface? (recommended but not required)"
-LOCAL139="Would you like to install webmin management interface? (recommended and default management interface, only say no if you know what you're doeing.)"
+LOCAL139="Would you like to install webmin management interface? (recommended as default management interface, only say no if you know what you're doing.)"
 LOCAL140="Select yes to select an existant folder or no to create a new one"
