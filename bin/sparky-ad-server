@@ -763,15 +763,15 @@ ps ax | egrep "samba|smbd|nmbd|winbindd|ntp" >> /var/log/sparky-ad-server.log
 ## Verify domain records and basic services
 echo "===== DOMAIN LEVEL TEST ======" >> /var/log/sparky-ad-server.log
 samba-tool domain level show >> /var/log/sparky-ad-server.log
-host -t SRV _ldap._tcp.$MYDOMAINNAME. >> /var/log/sparky-ad-server.log
-host -t SRV _kerberos._udp.$MYDOMAINNAME. >> /var/log/sparky-ad-server.log
+host -t SRV _ldap._tcp.$DOMAIN. >> /var/log/sparky-ad-server.log
+host -t SRV _kerberos._udp.$DOMAIN. >> /var/log/sparky-ad-server.log
 host -t A $MYFQDN. >> /var/log/sparky-ad-server.log
 klist >> /var/log/sparky-ad-server.log
 smbclient //$MYHOSTNAME/netlogon -U Administrator -c 'ls' $SMBPASS >> /var/log/sparky-ad-server.log
 echo "===== ---------------- ======" >> /var/log/sparky-ad-server.log
 
 # Important step to grant network file service and ajust shared home folders permissions
-usermod -aG sudo $UPDOMAIN\administrator
+usermod -aG sudo $UPDOMAIN\\administrator
 net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"%$SMBPASS
 chown root:"Domain Admins" /var/lib/samba/sysvol/$MYDOMAINNAME/scripts
 chmod 2775 /var/lib/samba/sysvol/$MYDOMAINNAME/scripts
