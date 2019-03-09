@@ -18,6 +18,14 @@ fi
 # register install file (so can detect already began install)
 touch /tmp/adinstallstart.$$
 
+# enable network-manager to fetch netconfig
+NTMNG=$(service network-manager status | grep dead)
+if [ "$NTMNG" = "   Active: inactive (dead)" ]; then
+	systemctl enable network-manager
+	service network-manager start
+else
+	echo "Network Manager enabled already"
+fi
 # get default's locale file
 DEFLOCDIR="/usr/share/sparky/sparky-ad-server"
 if [ "`cat /etc/default/locale | grep fr`" != "" ]; then
@@ -382,6 +390,8 @@ fi
 rm -f /tmp/ifconf0
 rm -f /tmp/netdevs.$$
 chattr +i /etc/network/interfaces
+service network-manager stop
+systemctl disable network-manager
 ### end of bonding setup ###
 
 # Backup and edit sysctl to enable ipv4 fowarding
@@ -420,7 +430,7 @@ elif [ "$FILEHOSTNAME" != "" ]; then
 	fi
 fi
 sed -i '1 c\'$MYHOSTNAME'' /etc/hostname
-hostname $MYHOSTNAME
+hostname -b -F /etc/hostname
 rm -f /tmp/myhname.$$
 
 # Ask for domain name, use actual if any or use the default "sparky"
@@ -501,15 +511,18 @@ if [ -f /etc/hosts ]; then
 	touch /etc/hosts
 
 	#  Add the loopback IP Address
-	echo "$LOADDR4 localhost localhost.localdomain" >> /etc/hosts
-	echo "$LOADDR6 localhost localhost.localdomain ip6-localhost ip6-loopback" >> /etc/hosts
+	echo "$LOADDR4 localhost.localdomain localhost" >> /etc/hosts
+	echo "$LOADDR6 localhost.localdomain localhost ip6-localhost ip6-loopback" >> /etc/hosts
+	echo " " >> /etc/hosts
+	echo "fe00::0         ip6-localnet" >> /etc/hosts
+	echo "ff00::0         ip6-mcastprefix" >> /etc/hosts
+	echo "ff02::1		ip6-allnodes" >> /etc/hosts
+	echo "ff02::2		ip6-allrouters" >> /etc/hosts
 	echo " " >> /etc/hosts
 	#  Add the server's current IP Address and HostName to /etc/hosts
-	echo "$IPADDR4 $MYHOSTNAME $MYFQDN ${MYHOSTNAME^^} ${MYFQDN^^}" >> /etc/hosts
-	echo "$IPADDR6 $MYHOSTNAME $MYFQDN ${MYHOSTNAME^^} ${MYFQDN^^}" >> /etc/hosts
-	echo " " >> /etc/hosts
-	echo "ff02::1 ip6-allnodes" >> /etc/hosts
-	echo "ff02::2 ip6-allrouters" >> /etc/hosts
+	echo "$IPADDR4 $MYFQDN $MYHOSTNAME ${MYFQDN^^} ${MYHOSTNAME^^}" >> /etc/hosts
+	echo "$IPADDR6 $MYFQDN $MYHOSTNAME ${MYFQDN^^} ${MYHOSTNAME^^}" >> /etc/hosts
+	
 	
 	# Change the way resolvconf works and lock the file
 	chattr -i /etc/resolv.conf
@@ -726,6 +739,7 @@ netgroup:       nis
 FOO
 
 # Add domain admins to sudoers
+UPDOMAIN="${MYDOMAINNAME^^}"
 echo "%$UPDOMAIN\\domain\ admins ALL=(ALL:ALL) ALL" | tee -a /etc/sudoers
 echo "Set group_source dynamic" >> /etc/sudo.conf
 
@@ -764,8 +778,8 @@ echo "        read only - No" | tee -a /etc/samba/smb.conf
 echo "        writeable = Yes" | tee -a /etc/samba/smb.conf
 echo "        write list = @users" | tee -a /etc/samba/smb.conf
 echo "        browsable = Yes" | tee -a /etc/samba/smb.conf
-# echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0022" | tee -a /etc/pam.d/common-session-noninteractive
-# sed -i '13 c\auth       required   pam_issue.so issue=/etc/issue' /etc/pam.d/login
+echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0022" | tee -a /etc/pam.d/common-session-noninteractive
+sed -i '13 c\auth       required   pam_issue.so issue=/etc/issue' /etc/pam.d/login
 # sed -i '3 c\@include common-session' /etc/pam.d/samba
 
 # touch /usr/share/libpam-script/mkhomedir
@@ -779,34 +793,36 @@ echo "        browsable = Yes" | tee -a /etc/samba/smb.conf
 #echo"auth optional pam_script.so" | tee -a /etc/pam.d/common-auth
 
 # Create netlogon.bat script to auto create user folder on server if not present
-#UPHN=${MYHOSTNAME^^}
-#UPSMBROOT=${SMBROOT^^}
-#cat > /var/lib/samba/sysvol/$MYDOMAINNAME/scripts/netlogon.bat << FOO
-#@echo off
-#setlocal EnableDelayedExpansion
-#net time \\$UPHN /set /yes
-#if not exist "\\$UPHN\$UPSMBROOT\UserFiles\%USERNAME%" (
-#  mkdir "\\$UPHN\$UPSMBROOT\UserFiles\%USERNAME%"
-#  if "!errorlevel!" EQU "0" (
-#    echo Folder created successfully
-#  ) else (
-#    echo Error while creating folder
-#  )
-#) else (
-#  echo Folder already exists
-#)
-#net use X: \\$UPHN\$UPSMBROOT\UserFiles\%USERNAME%
-#exit
-#FOO
-#todos /var/lib/samba/sysvol/$MYDOMAINNAME/scripts/netlogon.bat
+UPHN=${MYHOSTNAME^^}
+UPSMBROOT=${SMBROOT^^}
+cat > /var/lib/samba/sysvol/$DOMAIN/scripts/netlogon.bat << FOO
+@echo off
+setlocal EnableDelayedExpansion
+net time \\\\$UPHN /set /yes
+if not exist "\\\\$UPHN\\$UPSMBROOT\UserFiles\%USERNAME%" (
+  mkdir "\\\\$UPHN\\$UPSMBROOT\UserFiles\%USERNAME%"
+  if "!errorlevel!" EQU "0" (
+    echo Folder created successfully
+  ) else (
+    echo Error while creating folder
+  )
+) else (
+  echo Folder already exists
+)
+net use X: \\\\$UPHN\\$UPSMBROOT\%USERNAME%
+exit
+FOO
+todos /var/lib/samba/sysvol/$DOMAIN/scripts/netlogon.bat
 
 # Link backup script to cron weekly
-if [ -f /etc/cron.weekly/sparky-ad-sambabkp ]; than
-	echo "backupscript already installed" >> >> /var/log/sparky-ad-server.log
-else
-	echo "backupscript installed" >> >> /var/log/sparky-ad-server.log
+SMBKP=$(ls /etc/cron.weekly/sparky-ad-sambabkp  >> /dev/null 2>&1 && echo yes || echo no)
+if [ "$SMBKP" = "yes" ]; then
+	echo "backupscript already installed" >> /var/log/sparky-ad-server.log
+elif [ "$SMBKP" = "no" ]; then
+	echo "backupscript installed" >> /var/log/sparky-ad-server.log
 	ln -s /usr/bin/sparky-ad-sambabkp /etc/cron.weekly
 fi
+
 # Reload Samba config, enable and start all samba ad dc related services and reload all config before making it
 smbcontrol all reload-config
 systemctl daemon-reload
@@ -835,8 +851,11 @@ smbclient //$MYHOSTNAME/netlogon -U Administrator -c 'ls' $SMBPASS >> /var/log/s
 echo "===== ---------------- ======" >> /var/log/sparky-ad-server.log
 
 # Important step to grant network file service and ajust shared home folders permissions
+echo "Adding Administrator to sudo group"
 usermod -aG sudo $UPDOMAIN\\administrator
+echo "Grant Administrator disk operator status"
 net rpc rights grant "$UPDOMAIN\domain admins" SeDiskOperatorPrivilege -U "$UPDOMAIN\administrator"%$SMBPASS
+echo "Ajust permissions"
 chown root:"Domain Admins" /var/lib/samba/sysvol/$DOMAIN/scripts
 chmod 0775 /var/lib/samba/sysvol/$DOMAIN/scripts
 chown -R root:"Domain Admins" /home/$SMBROOT
@@ -857,6 +876,7 @@ NETWORK3=`ifconfig | grep inet | head -n1 | cut -f2 -d":" | awk '{print $2}' | c
 NETWORK4=`ifconfig | grep inet | head -n1 | cut -f2 -d":" | awk '{print $2}' | cut -f4 -d"."`
 NETADD=$NETWORK1.$NETWORK2.$NETWORK3.$NETWORK4
 
+echo "Adding reverse lookup zone to server"
 samba-tool dns add $MYHOSTNAME $MYDOMAINNAME $MYHOSTNAME A $NETADD -U Administrator --password=$SMBPASS
 samba-tool dns zonecreate $MYDOMAINNAME $NETWORK3.$NETWORK2.$NETWORK1.in-addr.arpa -U Administrator --password=$SMBPASS
 samba-tool dns add $MYHOSTNAME $NETWORK3.$NETWORK2.$NETWORK1.in-addr.arpa $NETWORK4 PTR $MYTLD -U Administrator --password=$SMBPASS
@@ -1033,7 +1053,7 @@ fi
 
 ## install webmin, if desired ##
 # question the install nedded
-$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL138" $HEIGHT $WIDTH
+$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL139" $HEIGHT $WIDTH
 if [ "$?" = "0" ]; then
 	apt-get install strongswan-starter webmin libauthen-libwrap-perl -y
 	echo "STEP9=WebMin manager installed" >> /var/log/sparky-ad-server.log
