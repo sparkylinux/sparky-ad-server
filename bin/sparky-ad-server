@@ -153,14 +153,14 @@ if [ "$ARCH64" != "" ]; then
 		dpkg --add-architecture i386
 	fi
 	DEBIAN_FRONTEND=noninteractive apt-get update
-	DEBIAN_FRONTEND=noninteractive apt-get install sparky-meta-server krb5-user ctdb tofrodos krb5-admin-server krb5-kdc krb5-kdc-ldap krb5-kpropd libev4 libpam-krb5 -y
+	DEBIAN_FRONTEND=noninteractive apt-get install sparky-meta-server krb5-user ctdb tofrodos smbnetfs nmap openresolv krb5-admin-server krb5-kdc krb5-kdc-ldap krb5-kpropd libev4 libpam-krb5 -y
 	DEBIAN_FRONTEND=noninteractive apt-get update
 	update-command-not-found
 	SERVPACK="64bit"
 else
 	# 32 bit
 	DEBIAN_FRONTEND=noninteractive apt-get update
-	DEBIAN_FRONTEND=noninteractive apt-get install sparky-meta-server krb5-user ctdb tofrodos krb5-admin-server krb5-kdc krb5-kdc-ldap krb5-kpropd libev4 libpam-krb5 -y
+	DEBIAN_FRONTEND=noninteractive apt-get install sparky-meta-server krb5-user ctdb tofrodos smbnetfs nmap openresolv krb5-admin-server krb5-kdc krb5-kdc-ldap krb5-kpropd libev4 libpam-krb5 -y
 	DEBIAN_FRONTEND=noninteractive apt-get update
 	update-command-not-found
 	SERVPACK="32bit"
@@ -243,8 +243,7 @@ else
 		$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL113 $LOCAL117" $HEIGHT $WIDTH
 		if [ "$?" = "0" ]; then
 			nano /etc/network/interfaces
-			/etc/init.d/networking stop
-			/etc/init.d/networking start
+			/etc/init.d/networking stop && /etc/init.d/networking start
 		else
 			echo "Cannot install, no network, exiting."
 			echo "STEP4=Cannot install, no network, exiting." >> /var/log/sparky-ad-server.log
@@ -304,24 +303,21 @@ auto bond0
 	gateway $GATEWAY0
 iface bond0 inet6 auto
 FOO
-		/etc/init.d/networking stop
-		/etc/init.d/networking start
+		/etc/init.d/networking stop && /etc/init.d/networking start
 		echo "STEP4=networking & bonding auto set up" >> /var/log/sparky-ad-server.log
 		cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
 	# check or change network settings
 	$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL112" $HEIGHT $WIDTH
 	if [ "$?" = "0" ]; then
 		nano /etc/network/interfaces
-		/etc/init.d/networking stop
-		/etc/init.d/networking start
+		/etc/init.d/networking stop && /etc/init.d/networking start
 		echo "STEP4=networking & bonding manually fixed" >> /var/log/sparky-ad-server.log
 		cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
 	else
 		if [ "$NETCONF" = "failed" ]; then
 			echo "STEP4=networking & bonding autoconfiguration failed so editing interfaces manually" >> /var/log/sparky-ad-server.log
 			nano /etc/network/interfaces
-			/etc/init.d/networking stop
-			/etc/init.d/networking start
+			/etc/init.d/networking stop && /etc/init.d/networking start
 		fi
 	fi
 		echo "Bonding setup with more than one card or port" >> /var/log/sparky-ad-server.log
@@ -339,24 +335,21 @@ iface $INETDEV inet static
 	gateway $GATEWAY0
 iface $INETDEV inet6 auto
 FOO
-		/etc/init.d/networking stop
-		/etc/init.d/networking start
+		/etc/init.d/networking stop && /etc/init.d/networking start
 		echo "STEP4=SINGLE networking auto set up" >> /var/log/sparky-ad-server.log
 		cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
 		# check or change network settings
 		$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL112" $HEIGHT $WIDTH
 		if [ "$?" = "0" ]; then
 			nano /etc/network/interfaces
-			/etc/init.d/networking stop
-			/etc/init.d/networking start
+			/etc/init.d/networking stop && /etc/init.d/networking start
 			echo "STEP4=SINGLE networking manually fixed" >> /var/log/sparky-ad-server.log
 			cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
 		else
 			if [ "$NETCONF" = "failed" ]; then
 				echo "STEP4=SINGLE networking autoconfiguration failed so editing interfaces manually" >> /var/log/sparky-ad-server.log
 				nano /etc/network/interfaces
-				/etc/init.d/networking stop
-				/etc/init.d/networking start
+				/etc/init.d/networking stop && /etc/init.d/networking start
 				cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
 			fi
 		fi
@@ -368,8 +361,7 @@ else
 	$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL113 $LOCAL117" $HEIGHT $WIDTH
 	if [ "$?" = "0" ]; then
 		nano /etc/network/interfaces
-		/etc/init.d/networking stop
-		/etc/init.d/networking start
+		/etc/init.d/networking stop && /etc/init.d/networking start
 		echo "STEP4=no eth devices found, set interfaces manually." >> /var/log/sparky-ad-server.log
 	else
 		echo "STEP4=no eth devices found, not set interfaces manually, exiting."
@@ -530,8 +522,8 @@ if [ -f /etc/hosts ]; then
 	touch /etc/resolv.conf
 	echo "domain $DOMAIN" >> /etc/resolv.conf
 	echo "search $DOMAIN" >> /etc/resolv.conf
-	echo "nameserver $IPADDR4" >> /etc/resolv.conf
-	echo "nameserver $IPADDR6" >> /etc/resolv.conf
+	echo "nameserver $LOADDR4" >> /etc/resolv.conf
+	echo "nameserver $LOADDR6" >> /etc/resolv.conf
 else
 	echo "No hosts file found"
 	echo "STEP5=No hosts file found" >> /var/log/sparky-ad-server.log
@@ -540,7 +532,10 @@ fi
 
 # Lock changes on those files
 chattr +i /etc/hosts
+rm /etc/resolv.conf.tail
+cat /etc/resolv.conf >> /etc/resolv.conf.tail
 chattr +i /etc/resolv.conf
+chattr +i /etc/resolv.conf.tail
 
 echo "STEP5:" >> /var/log/sparky-ad-server.log
 echo "MYHOSTNAME=$MYHOSTNAME" >> /var/log/sparky-ad-server.log
@@ -686,15 +681,22 @@ while [ "$SMBPASS" != "$SMBPASS2" ]; do
 	rm /tmp/smbpass.$$
 done
 
+rm /etc/profile.d/sambaldb.sh
+cat > /etc/profile.d/sambaldb.sh << FOO
+export LDB_MODULES_PATH="${LDB_MODULES_PATH}:/usr/lib/samba/ldb"
+FOO
+chmod 0755 /etc/profile.d/sambaldb.sh
+. /etc/profile.d/sambaldb.sh
+
 # Do the provision
 IPADDR4=$(/sbin/ifconfig | grep 'inet '| grep -v '127.0.0.1' | cut -d: -f2 | awk '{ print $2}')
 IPADDR6=$(/sbin/ifconfig | grep 'inet6 '| grep -v '::1' | awk '{ print $2}')
-samba-tool domain provision --realm=$DOMAIN --domain=${MYDOMAINNAME^^} --host-name=$MYHOSTNAME --host-ip=$IPADDR4 --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="netbios name=${MYHOSTNAME^^}" --option="dns forwarder=$MYDNS" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind enum users=yes" --option="winbind enum groups=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="hide unreadable=yes" --option="hide unwriteable files=no" --option="template homedir=/home/$SMBROOT/UserFiles/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="max wins ttl=518400" --option="local master=yes" --option="add user script=/usr/sbin/useradd -m '%u'" --option="delete user script=/usr/sbin/userdel -r '%u'" --option="add machine script=/usr/sbin/useradd -s /bin/false/ -d /var/lib/nobody %u" --option="add group script=/usr/sbin/groupadd %g" --option="delete group script=/usr/sbin/groupdel %g" --option="add user to group script=/usr/sbin/usermod -G %g %u" --option="passwd program=/usr/bin/passwd %u" --option="tls enabled=yes" --option="tls keyfile=tls/key.pem" --option="tls certfile=tls/cert.pem" --option="tls cafile=tls/ca.pem" --option="logon script=netlogon.bat" --option="allow dns updates=nonsecure and secure" --option="server signing=auto" --option="idmap_ldb : use rfc2307=yes" --option="idmap config * : backend=tdb" --option="idmap config * : range=1000000-1999999" --option="idmap config * : schema_mode=rfc2307" --option="idmap config ${DOMAIN^^} : backend=ad" --option="idmap config ${DOMAIN^^} : range=1000-999999" --option="time server=yes" --option="domain logons=Yes" --option="domain master=yes"
+samba-tool domain provision --realm=$DOMAIN --domain=${MYDOMAINNAME^^} --host-name=$MYHOSTNAME --host-ip=$IPADDR4 --site=$MYSITENAME --dns-backend=SAMBA_INTERNAL --adminpass=$SMBPASS --server-role=dc --function-level=2008_R2 --use-rfc2307 --use-xattr=yes --option="netbios name=${MYHOSTNAME^^}" --option="dns forwarder=$MYDNS" --option="server string=%h SparkyLinux Server Host" --option="winbind nss info=rfc2307" --option="winbind use default domain=Yes" --option="winbind enum users=yes" --option="winbind enum groups=yes" --option="log level=1" --option="log file = /home/log/samba/%m.log" --option="max log size=100000" --option="access based share enum=Yes" --option="hide unreadable=yes" --option="hide unwriteable files=no" --option="template homedir=/home/$SMBROOT/UserFiles/%U" --option="template shell=/bin/bash" --option="map acl inherit=yes" --option="acl group control=yes" --option="store dos attributes=Yes" --option="vfs objects=acl_xattr" --option="wins support=yes" --option="max wins ttl=518400" --option="local master=yes" --option="add user script=/usr/sbin/useradd -m '%u'" --option="delete user script=/usr/sbin/userdel -r '%u'" --option="add machine script=/usr/sbin/useradd -s /bin/false/ -d /var/lib/nobody %u" --option="add group script=/usr/sbin/groupadd %g" --option="delete group script=/usr/sbin/groupdel %g" --option="add user to group script=/usr/sbin/usermod -G %g %u" --option="passwd program=/usr/bin/passwd %u" --option="tls enabled=yes" --option="tls keyfile=tls/key.pem" --option="tls certfile=tls/cert.pem" --option="tls cafile=tls/ca.pem" --option="logon script=netlogon.bat" --option="allow dns updates=nonsecure and secure" --option="server signing=auto" --option="client signing=auto" --option="idmap_ldb : use rfc2307=yes" --option="idmap config * : backend=tdb" --option="idmap config * : range=1000000-1999999" --option="idmap config * : schema_mode=rfc2307" --option="idmap config ${DOMAIN^^} : backend=ad" --option="idmap config ${DOMAIN^^} : range=1000-999999" --option="time server=yes" --option="domain logons=Yes" --option="domain master=yes"
 
 # finish ntp configuration after samba created libs
 chown root:ntp /var/lib/samba/ntp_signd/
 chgrp ntp /var/lib/samba/ntp_signd
-chmod -R 750 /var/lib/samba/ntp_signd/
+chmod -R 0750 /var/lib/samba/ntp_signd/
 
 #Linking samba generated kerberos file to systemwide
 ln -sf /var/lib/samba/private/krb5.conf /etc/krb5.conf
@@ -737,6 +739,17 @@ rpc:            db files
 
 netgroup:       nis
 FOO
+cat > /etc/security/pam_winbind.conf << FOO
+[global]
+  debug = no
+  debug_state = no
+  try_first_pass = yes
+  krb5_auth = yes
+  krb5_ccache_type = FILE
+  cached_login = yes
+  silent = no
+  mkhomedir = yes
+FOO
 
 # Add domain admins to sudoers
 UPDOMAIN="${MYDOMAINNAME^^}"
@@ -765,6 +778,7 @@ echo "        browseable = No" | tee -a /etc/samba/smb.conf
 # Add home directories, default share and enable auto creation of user directories uppon logon using /etc/skel model
 echo " " | tee -a /etc/samba/smb.conf
 echo "[homes]" | tee -a /etc/samba/smb.conf
+echo "		  root preexec = mkdir -p -m 0700 /home/$SMBROOT/UserFiles/%U && chown %U:"Domain Admins" /home/$SMBROOT/UserFiles/%U'
 echo "        comment = User Folder on Server" | tee -a /etc/samba/smb.conf
 echo "        path = /home/$SMBROOT/UserFiles/%U" | tee -a /etc/samba/smb.conf
 echo "        read only - No" | tee -a /etc/samba/smb.conf
@@ -778,19 +792,6 @@ echo "        read only - No" | tee -a /etc/samba/smb.conf
 echo "        writeable = Yes" | tee -a /etc/samba/smb.conf
 echo "        write list = @users" | tee -a /etc/samba/smb.conf
 echo "        browsable = Yes" | tee -a /etc/samba/smb.conf
-echo "session required pam_mkhomedir.so skel=/etc/skel/ umask=0022" | tee -a /etc/pam.d/common-session-noninteractive
-sed -i '13 c\auth       required   pam_issue.so issue=/etc/issue' /etc/pam.d/login
-# sed -i '3 c\@include common-session' /etc/pam.d/samba
-
-# touch /usr/share/libpam-script/mkhomedir
-#cat > /usr/share/libpam-script/mkhomedir << FOO
-##
-#!/bin/bash
-#adduser \$PAM_USER --disabled-password --quiet --gecos ""
-##
-#FOO
-#chmod +x /usr/share/libpam-script/mkhomedir
-#echo"auth optional pam_script.so" | tee -a /etc/pam.d/common-auth
 
 # Create netlogon.bat script to auto create user folder on server if not present
 UPHN=${MYHOSTNAME^^}
@@ -877,10 +878,11 @@ NETWORK4=`ifconfig | grep inet | head -n1 | cut -f2 -d":" | awk '{print $2}' | c
 NETADD=$NETWORK1.$NETWORK2.$NETWORK3.$NETWORK4
 
 echo "Adding reverse lookup zone to server"
-samba-tool dns add $MYHOSTNAME $MYDOMAINNAME $MYHOSTNAME A $NETADD -U Administrator --password=$SMBPASS
-samba-tool dns zonecreate $MYDOMAINNAME $NETWORK3.$NETWORK2.$NETWORK1.in-addr.arpa -U Administrator --password=$SMBPASS
-samba-tool dns add $MYHOSTNAME $NETWORK3.$NETWORK2.$NETWORK1.in-addr.arpa $NETWORK4 PTR $MYTLD -U Administrator --password=$SMBPASS
-samba_dnsupdate --use-file=/var/lib/samba/private/dns.keytab --verbose --all-names
+samba-tool dns zonecreate $MYFQDN $NETWORK3.$NETWORK2.$NETWORK1.in-addr.arpa -U Administrator --password=$SMBPASS
+#samba-tool dns add $MYHOSTNAME $MYDOMAINNAME $MYHOSTNAME A $NETADD -U Administrator --password=$SMBPASS
+samba-tool dns add $MYFQDN $NETWORK3.$NETWORK2.$NETWORK1.in-addr.arpa $NETWORK4 PTR $MYTLD -U Administrator --password=$SMBPASS
+#samba_dnsupdate --use-file=/var/lib/samba/private/dns.keytab --verbose --all-names
+host -t PTR $NETADD
 
 # shared folders
 # ask if want to share other than deafault home share
