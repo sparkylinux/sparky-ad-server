@@ -533,6 +533,7 @@ fi
 # Lock changes on those files
 chattr +i /etc/hosts
 rm /etc/resolv.conf.tail
+chattr -i /etc/resolv.conf.tail
 cat /etc/resolv.conf >> /etc/resolv.conf.tail
 chattr +i /etc/resolv.conf
 chattr +i /etc/resolv.conf.tail
