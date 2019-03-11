@@ -1,14 +1,18 @@
 # Polish localization file for Sparky AD Server.
 # Copyright 2018 Paweł "pavroo" Pijanowski <pavroo@onet.eu> 2018/10/28
 # Under the GNU GPL v2
-# Last update 2019/03/07 by pavroo
+# Last update 2019/03/11 by pavroo
 LOCAL1="Połączenie z internetem nieudane!"
-LOCAL2="Instalacja on-line zplikacji serwerowych może być przeprowadzona!"
+LOCAL2="Instalacja on-line aplikacji serwerowych nie może być przeprowadzona!"
 LOCAL3="Kończenie..."
 LOCAL4="Konfiguracja serwera jest przeznaczona tylko dla stabilnej linii Debian/Sparky."
 LOCAL5="To jest Sparky Active Directory skrypt poinstalacyjny, który zainstaluje i ustawi wszystko co potrzebujesz do uruchomienia serwera AD."
 LOCAL6="Kontynuować?"
-LOCAL7="Sparky Server Installer"
+LOCAL7="Sparky Server Instalator"
+LOCAL8="Nie skończyłeś konfiguracji Sparky Server ostatnim razem.\nCzy chcesz kontynuować z miejsca, w którym ostatnio skończyłeś czy zacząć od początku?"
+LOCAL9="Zacznij od początku"
+LOCAL10="Kontynuuj z miejsca w którym skończyłeś"
+LOCAL11="Konfiguracja Sparky Server została już ukończona.\nCzy chcesz zacząć jeszcze raz od początku?"
 #
 LOCAL106="Czy chcesz użyć już skonfigurowanej nazwy domeny?"
 LOCAL107="Wpisz nazwę TLD; podpowiedź: host.lan.>> intranet << ; Jeśli nie wpiszesz żadnej nazwy, zostanie domyślnie użyta nazwa intranet."

@@ -1,20 +1,27 @@
 #!/bin/bash
+
 # sparky-ad-server script lets you install and set up the server edition on the top of sparky installation
 # Copyright Paweł Pijanowski "pavroo" <pavroo@onet.eu> & Daniel Campos Ramos 2018/09/23
 # Under the GNU GPL3 License
 #
 # script deps: apt, bash, coreutils, dpkg, dialog, gawk, grep, hostname, nano, iputils-ping, sed, sparky-ntp-server
 #
-# Last update 2019/03/04 by Daniel
+# Last update 2019/03/11 20:15 by pavroo
 
 # checking to make sure the script is running with root privileges
 TESTROOT=`whoami`
 if [ "$TESTROOT" != "root" ]; then
 	echo "Must be run as root... Exiting..."
 	exit 1
-else
-	echo "OK, running as root"
 fi
+
+# if Live system just quit, do nothing
+TESTMODE=`grep "1000" /etc/passwd | grep "Live"`
+if [ "$TESTMODE" != "" ]; then
+	echo "It is Live system! Exiting now..."
+	exit 1
+fi
+
 # register install file (so can detect already began install)
 touch /tmp/adinstallstart.$$
 
@@ -26,6 +33,7 @@ if [ "$NTMNG" = "   Active: inactive (dead)" ]; then
 else
 	echo "Network Manager enabled already"
 fi
+
 # get default's locale file
 DEFLOCDIR="/usr/share/sparky/sparky-ad-server"
 if [ "`cat /etc/default/locale | grep fr`" != "" ]; then
@@ -79,6 +87,127 @@ else
 	exit 1
 fi
 
+mainmenu ()
+{
+
+# check where did you stop last time, if not first run
+if [ -f /var/log/sparky-ad-steps.log ]; then
+	CHECKSTEPS=`cat /var/log/sparky-ad-steps.log | grep [0-9] | tail -n1`
+	if [ "$CHECKSTEPS" = "1" ]; then
+		$DIALOG $TITLE"$TITLETEXT" $MENU "$LOCAL8" $HEIGHT $WIDTH $MENUHEIGHT Restart "$LOCAL9" Continue "$LOCAL10" Exit "$LOCAL3" 2>/tmp/sparky-ad-steps
+		if [ "$?" = "0" ]; then
+			NEWJOB=`cat /tmp/sparky-ad-steps`
+			NEWSTEP="2"
+		else
+			echo "Exiting sparky-ad-server installation by user."
+			exit 1
+		fi
+	elif [ "$CHECKSTEPS" = "2" ]; then
+		$DIALOG $TITLE"$TITLETEXT" $MENU "$LOCAL8" $HEIGHT $WIDTH $MENUHEIGHT Restart "$LOCAL9" Continue "$LOCAL10" Exit "$LOCAL3" 2>/tmp/sparky-ad-steps
+		if [ "$?" = "0" ]; then
+			NEWJOB=`cat /tmp/sparky-ad-steps`
+			NEWSTEP="3"
+		else
+			echo "Exiting sparky-ad-server installation by user."
+			exit 1
+		fi
+	elif [ "$CHECKSTEPS" = "3" ]; then
+		$DIALOG $TITLE"$TITLETEXT" $MENU "$LOCAL8" $HEIGHT $WIDTH $MENUHEIGHT Restart "$LOCAL9" Continue "$LOCAL10" Exit "$LOCAL3" 2>/tmp/sparky-ad-steps
+		if [ "$?" = "0" ]; then
+			NEWJOB=`cat /tmp/sparky-ad-steps`
+			NEWSTEP="4"
+		else
+			echo "Exiting sparky-ad-server installation by user."
+			exit 1
+		fi
+	elif [ "$CHECKSTEPS" = "4" ]; then
+		$DIALOG $TITLE"$TITLETEXT" $MENU "$LOCAL8" $HEIGHT $WIDTH $MENUHEIGHT Restart "$LOCAL9" Continue "$LOCAL10" Exit "$LOCAL3" 2>/tmp/sparky-ad-steps
+		if [ "$?" = "0" ]; then
+			NEWJOB=`cat /tmp/sparky-ad-steps`
+			NEWSTEP="5"
+		else
+			echo "Exiting sparky-ad-server installation by user."
+			exit 1
+		fi
+	elif [ "$CHECKSTEPS" = "5" ]; then
+		$DIALOG $TITLE"$TITLETEXT" $MENU "$LOCAL8" $HEIGHT $WIDTH $MENUHEIGHT Restart "$LOCAL9" Continue "$LOCAL10" Exit "$LOCAL3" 2>/tmp/sparky-ad-steps
+		if [ "$?" = "0" ]; then
+			NEWJOB=`cat /tmp/sparky-ad-steps`
+			NEWSTEP="6"
+		else
+			echo "Exiting sparky-ad-server installation by user."
+			exit 1
+		fi
+	elif [ "$CHECKSTEPS" = "6" ]; then
+		$DIALOG $TITLE"$TITLETEXT" $MENU "$LOCAL8" $HEIGHT $WIDTH $MENUHEIGHT Restart "$LOCAL9" Continue "$LOCAL10" Exit "$LOCAL3" 2>/tmp/sparky-ad-steps
+		if [ "$?" = "0" ]; then
+			NEWJOB=`cat /tmp/sparky-ad-steps`
+			NEWSTEP="7"
+		else
+			echo "Exiting sparky-ad-server installation by user."
+			exit 1
+		fi
+	elif [ "$CHECKSTEPS" = "7" ]; then
+		$DIALOG $TITLE"$TITLETEXT" $MENU "$LOCAL8" $HEIGHT $WIDTH $MENUHEIGHT Restart "$LOCAL9" Continue "$LOCAL10" Exit "$LOCAL3" 2>/tmp/sparky-ad-steps
+		if [ "$?" = "0" ]; then
+			NEWJOB=`cat /tmp/sparky-ad-steps`
+			NEWSTEP="8"
+		else
+			echo "Exiting sparky-ad-server installation by user."
+			exit 1
+		fi
+	elif [ "$CHECKSTEPS" = "8" ]; then
+		$DIALOG $TITLE"$TITLETEXT" $MENU "$LOCAL8" $HEIGHT $WIDTH $MENUHEIGHT Restart "$LOCAL9" Continue "$LOCAL10" Exit "$LOCAL3" 2>/tmp/sparky-ad-steps
+		if [ "$?" = "0" ]; then
+			NEWJOB=`cat /tmp/sparky-ad-steps`
+			NEWSTEP="9"
+		else
+			echo "Exiting sparky-ad-server installation by user."
+			exit 1
+		fi
+	elif [ "$CHECKSTEPS" = "9" ]; then
+		$DIALOG $TITLE"$TITLETEXT" $MENU "$LOCAL11" $HEIGHT $WIDTH $MENUHEIGHT Restart "$LOCAL9" Exit "$LOCAL3" 2>/tmp/sparky-ad-steps
+		if [ "$?" = "0" ]; then
+			NEWJOB=`cat /tmp/sparky-ad-steps`
+		else
+			echo "Exiting sparky-ad-server installation by user."
+			exit 1
+		fi
+
+	fi
+
+	if [ "$NEWJOB" = "Restart" ]; then
+		menustep1
+	elif [ "$NEWJOB" = "Continue" ]; then
+		if [ "$NEWSTEP" = "2" ]; then
+			menustep2
+		elif [ "$NEWSTEP" = "3" ]; then
+			menustep3
+		elif [ "$NEWSTEP" = "4" ]; then
+			menustep4
+		elif [ "$NEWSTEP" = "5" ]; then
+			menustep5
+		elif [ "$NEWSTEP" = "6" ]; then
+			menustep6
+		elif [ "$NEWSTEP" = "7" ]; then
+			menustep7
+		elif [ "$NEWSTEP" = "8" ]; then
+			menustep8
+		elif [ "$NEWSTEP" = "9" ]; then
+			menustep9
+		fi
+	fi
+	rm -f /tmp/sparky-ad-steps
+else
+	touch /var/log/sparky-ad-steps.log
+fi
+
+}
+
+### step 1: install pre-requisites ####################################################
+menustep1 ()
+{
+
 SPARKYVERCHECK5=`cat /etc/apt/sources.list.d/sparky-testing.list | grep testing`
 SPARKYVERCHECK4=`cat /etc/apt/sources.list.d/sparky-stable.list | grep stable`
 DEBIANVERCHECK10=`cat /etc/apt/sources.list | grep -e testing -e buster`
@@ -94,9 +223,9 @@ elif [ "$DEBIANVERCHECK10" != "" ]; then
 fi
 
 # add google DNSs to ensure resolving if firewall already configured to point AD as DNS or install stopped at middle
-	chattr -i /etc/resolv.conf
-	echo "nameserver 8.8.8.8" >> /etc/resolv.conf
-	echo "nameserver 2001:4860:4860::8888" >> /etc/resolv.conf
+chattr -i /etc/resolv.conf
+echo "nameserver 8.8.8.8" >> /etc/resolv.conf
+echo "nameserver 2001:4860:4860::8888" >> /etc/resolv.conf
 
 # checking connection
 PINGTEST=$(ping -c 1 debian.org | grep [0-9])
@@ -117,7 +246,7 @@ if [ "$?" != "0" ]; then
 	exit 1
 fi
 
-### pre install apt behaviour modification ##
+# pre install apt behaviour modification
 #APTOPT="/etc/apt/apt.conf.d/80packages"
 if [ -f /etc/apt/apt.conf.d/80packages ]; then
 	echo "APTOPT=Apt behaviour already exists"
@@ -133,17 +262,6 @@ else
 	echo "APTOPT=Apt behaviour changed" >> /var/log/sparky-ad-server.log
 fi
 
-if [ "$PINGTEST" = "" ]; then
-	$DIALOG $TITLE"$TITLETEXT" $MSGBOX "$LOCAL1\n$LOCAL2\n\n$LOCAL3" $HEIGHT $WIDTH
-	echo "PING TEST=Internet connection failed, exiting."
-	echo "PING TEST=Internet connection failed, exiting." >> /var/log/sparky-ad-server.log
-	exit 1
-else
-	echo "PING TEST=Internet connection OK"
-	echo "PING TEST=Internet connection OK" >> /var/log/sparky-ad-server.log
-fi
-
-### step 1: install pre-requisites ###
 # as the meta is pre-installed, the step 1 checks to make sure all deps are on the board
 
 if [ "$ARCH64" != "" ]; then
@@ -192,9 +310,14 @@ else
 fi
 rm -rf /home/test.txt
 
+echo "1" >> /var/log/sparky-ad-steps.log
+menustep2
+}
 ### end of step 1 ###
 
-### step 4: networking ###
+### step 2: networking ###############################################################
+menustep2 ()
+{
 
 # find network devices
 if [ -f /tmp/ifconf0 ]; then
@@ -212,31 +335,31 @@ echo $NETDEV0 $NETDEV1 >> /tmp/bonddevices.$$
 INETDEVS=$(cat /tmp/bonddevices.$$)
 
 if [ "$NETNAME0" != "" ]; then
-	echo "STEP4=NETNAME0:INETDEV0 device=$NETNAME0" >> /var/log/sparky-ad-server.log
+	echo "STEP2=NETNAME0:INETDEV0 device=$NETNAME0" >> /var/log/sparky-ad-server.log
 	if [ "$NETDEV1" != "" ]; then
-		echo "STEP4=NETNAME0:INETDEV1 device=$INETDEVS" >> /var/log/sparky-ad-server.log
+		echo "STEP2=NETNAME0:INETDEV1 device=$INETDEVS" >> /var/log/sparky-ad-server.log
 		rm -rf /tmp/bonddevices.$$
 	else
-		echo "STEP4=NETNAME0:INETDEV0 device=$NETDEV0" >> /var/log/sparky-ad-server.log
+		echo "STEP2=NETNAME0:INETDEV0 device=$NETDEV0" >> /var/log/sparky-ad-server.log
 		INETDEV="$NETDEV0"
 	fi
 elif [ "$NETNAME1" != "" ]; then
-	echo "STEP4=NETNAME1:INETDEV0 device=$NETNAME1" >> /var/log/sparky-ad-server.log
+	echo "STEP2=NETNAME1:INETDEV0 device=$NETNAME1" >> /var/log/sparky-ad-server.log
 	if [ "$NETDEV1" != "" ]; then
-		echo "STEP4=NETNAME0:INETDEV1 device=$INETDEVS" >> /var/log/sparky-ad-server.log
+		echo "STEP2=NETNAME0:INETDEV1 device=$INETDEVS" >> /var/log/sparky-ad-server.log
 	else
-		echo "STEP4=NETNAME1:INETDEV0 device=$NETDEV0" >> /var/log/sparky-ad-server.log
+		echo "STEP2=NETNAME1:INETDEV0 device=$NETDEV0" >> /var/log/sparky-ad-server.log
 		INETDEV="$INETDEV0"
 	fi
 else
-	echo "STEP4=No supported ethernet network devices found, have to set it manually or check missing specific drivers" >> /var/log/sparky-ad-server.log
+	echo "STEP2=No supported ethernet network devices found, have to set it manually or check missing specific drivers" >> /var/log/sparky-ad-server.log
 	YOURIFCONFIG=`cat /tmp/ifconf0`
 	$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL113 $LOCAL114\n$LOCAL115\n\n$YOURIFCONFIG" $HEIGHT $WIDTH
 	if [ "$?" = "0" ]; then
 		$DIALOG $TITLE"$TITLETEXT" $ENTRY "$LOCAL116" $HEIGHT $WIDTH 2>/tmp/serverchoice.$$
 		INETDEV=$(cat /tmp/serverchoice.$$)
 		NETNAME2=$(ip link | awk -F: '$0 !~ "lo|vir|wl|^[^0-9]"{print $2a;getline}')
-		echo "STEP4=manually added network device=$INETDEV" >> /var/log/sparky-ad-server.log
+		echo "STEP2=manually added network device=$INETDEV" >> /var/log/sparky-ad-server.log
 		rm /tmp/serverchoice.$$
 	else
 		# no eth devices found, set interfaces manually
@@ -246,13 +369,20 @@ else
 			/etc/init.d/networking stop && /etc/init.d/networking start
 		else
 			echo "Cannot install, no network, exiting."
-			echo "STEP4=Cannot install, no network, exiting." >> /var/log/sparky-ad-server.log
+			echo "STEP2=Cannot install, no network, exiting." >> /var/log/sparky-ad-server.log
 			exit 1
 		fi
 	fi
 fi
 
 # find address, netmask, network, broadcast, gateway
+# ipv6 example aaaa::bbbb:cccc:dddd:eeee
+#NET6WORK1=`cat /tmp/ifconf0 | grep inet6 | head -n1 | awk '{print $2}' | cut -f1 -d":"`
+#NET6WORK2=`cat /tmp/ifconf0 | grep inet6 | head -n1 | awk '{print $2}' | cut -f3 -d":"`
+#NET6WORK3=`cat /tmp/ifconf0 | grep inet6 | head -n1 | awk '{print $2}' | cut -f4 -d":"`
+#NET6WORK4=`cat /tmp/ifconf0 | grep inet6 | head -n1 | awk '{print $2}' | cut -f5 -d":"`
+#NET6WORK5=`cat /tmp/ifconf0 | grep inet6 | head -n1 | awk '{print $2}' | cut -f6 -d":"`
+
 NETWORK1=`cat /tmp/ifconf0 | grep inet | head -n1 | cut -f2 -d":" | awk '{print $2}' | cut -f1 -d"."`
 NETWORK2=`cat /tmp/ifconf0 | grep inet | head -n1 | cut -f2 -d":" | awk '{print $2}' | cut -f2 -d"."`
 NETWORK3=`cat /tmp/ifconf0 | grep inet | head -n1 | cut -f2 -d":" | awk '{print $2}' | cut -f3 -d"."`
@@ -281,7 +411,7 @@ fi
 if [ "$NETCONF" = "OK" ]; then
 	chattr -i /etc/network/interfaces
 	cp /etc/network/interfaces /etc/network/interfaces.original
-	### STEP 4 - Ask if want to install bonded interfaces or single one, than configure as desired
+	### STEP 2 - Ask if want to install bonded interfaces or single one, than configure as desired
 	## main ask dialog
 	$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL109" $HEIGHT $WIDTH
 	if [ "$?" = "0" ]; then
@@ -304,18 +434,18 @@ auto bond0
 iface bond0 inet6 auto
 FOO
 		/etc/init.d/networking stop && /etc/init.d/networking start
-		echo "STEP4=networking & bonding auto set up" >> /var/log/sparky-ad-server.log
+		echo "STEP2=networking & bonding auto set up" >> /var/log/sparky-ad-server.log
 		cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
 	# check or change network settings
 	$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL112" $HEIGHT $WIDTH
 	if [ "$?" = "0" ]; then
 		nano /etc/network/interfaces
 		/etc/init.d/networking stop && /etc/init.d/networking start
-		echo "STEP4=networking & bonding manually fixed" >> /var/log/sparky-ad-server.log
+		echo "STEP2=networking & bonding manually fixed" >> /var/log/sparky-ad-server.log
 		cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
 	else
 		if [ "$NETCONF" = "failed" ]; then
-			echo "STEP4=networking & bonding autoconfiguration failed so editing interfaces manually" >> /var/log/sparky-ad-server.log
+			echo "STEP2=networking & bonding autoconfiguration failed so editing interfaces manually" >> /var/log/sparky-ad-server.log
 			nano /etc/network/interfaces
 			/etc/init.d/networking stop && /etc/init.d/networking start
 		fi
@@ -336,18 +466,18 @@ iface $INETDEV inet static
 iface $INETDEV inet6 auto
 FOO
 		/etc/init.d/networking stop && /etc/init.d/networking start
-		echo "STEP4=SINGLE networking auto set up" >> /var/log/sparky-ad-server.log
+		echo "STEP2=SINGLE networking auto set up" >> /var/log/sparky-ad-server.log
 		cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
 		# check or change network settings
 		$DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL112" $HEIGHT $WIDTH
 		if [ "$?" = "0" ]; then
 			nano /etc/network/interfaces
 			/etc/init.d/networking stop && /etc/init.d/networking start
-			echo "STEP4=SINGLE networking manually fixed" >> /var/log/sparky-ad-server.log
+			echo "STEP2=SINGLE networking manually fixed" >> /var/log/sparky-ad-server.log
 			cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
 		else
 			if [ "$NETCONF" = "failed" ]; then
-				echo "STEP4=SINGLE networking autoconfiguration failed so editing interfaces manually" >> /var/log/sparky-ad-server.log
+				echo "STEP2=SINGLE networking autoconfiguration failed so editing interfaces manually" >> /var/log/sparky-ad-server.log
 				nano /etc/network/interfaces
 				/etc/init.d/networking stop && /etc/init.d/networking start
 				cat /etc/network/interfaces >> /var/log/sparky-ad-server.log
@@ -362,10 +492,10 @@ else
 	if [ "$?" = "0" ]; then
 		nano /etc/network/interfaces
 		/etc/init.d/networking stop && /etc/init.d/networking start
-		echo "STEP4=no eth devices found, set interfaces manually." >> /var/log/sparky-ad-server.log
+		echo "STEP2=no eth devices found, set interfaces manually." >> /var/log/sparky-ad-server.log
 	else
-		echo "STEP4=no eth devices found, not set interfaces manually, exiting."
-		echo "STEP4=no eth devices found, not set interfaces manually, exiting." >> /var/log/sparky-ad-server.log
+		echo "STEP2=no eth devices found, not set interfaces manually, exiting."
+		echo "STEP2=no eth devices found, not set interfaces manually, exiting." >> /var/log/sparky-ad-server.log
 		exit 1
 	fi
 fi
@@ -397,15 +527,19 @@ sed -i -e 's/#net.ipv6.conf.all.forwarding=1/net.ipv6.conf.all.forwarding=1/g' /
 # lock changes into the config
 chattr +i /etc/sysctl.conf
 
-### end of step 4 ###
+echo "2" >> /var/log/sparky-ad-steps.log
+menustep3
+}
+### end of step 2 ###
 
-### step 5: Pre samba configuration, backup and changes to hosts file ###
+### step 3: Pre samba configuration, backup and changes to hosts file #####################
+function menustep3 {
 
 # Ask for host name or use the default;
 FILEHOSTNAME=`cat /etc/hostname`
 if [ "$FILEHOSTNAME" = "live" ]; then
 	echo "This is Live enviroment! cannot continue, exiting."
-	echo "STEP4=This is Live enviroment! cannot continue, exiting." >> /var/log/sparky-ad-server.log
+	echo "STEP3=This is Live enviroment! cannot continue, exiting." >> /var/log/sparky-ad-server.log
 	exit 1
 elif [ "$FILEHOSTNAME" != "" ]; then
 	$DIALOG $TITLE="$TITLETEXT" $YESNO "$LOCAL108\n\n$FILEHOSTNAME" $HEIGHT $WIDTH
@@ -526,7 +660,7 @@ if [ -f /etc/hosts ]; then
 	echo "nameserver $LOADDR6" >> /etc/resolv.conf
 else
 	echo "No hosts file found"
-	echo "STEP5=No hosts file found" >> /var/log/sparky-ad-server.log
+	echo "STEP3=No hosts file found" >> /var/log/sparky-ad-server.log
 	exit 1
 fi
 
@@ -538,7 +672,7 @@ cat /etc/resolv.conf >> /etc/resolv.conf.tail
 chattr +i /etc/resolv.conf
 chattr +i /etc/resolv.conf.tail
 
-echo "STEP5:" >> /var/log/sparky-ad-server.log
+echo "STEP3:" >> /var/log/sparky-ad-server.log
 echo "MYHOSTNAME=$MYHOSTNAME" >> /var/log/sparky-ad-server.log
 echo "MYDOMAINNAME=$MYDOMAINNAME" >> /var/log/sparky-ad-server.log
 echo "DOMAIN=$DOMAIN" >> /var/log/sparky-ad-server.log
@@ -548,9 +682,14 @@ cat /etc/hosts >> /var/log/sparky-ad-server.log
 echo "ETC-RESOLV.CONF:" >> /var/log/sparky-ad-server.log
 cat /etc/resolv.conf >> /var/log/sparky-ad-server.log
 
-### end of step 5 ###
+echo "3" >> /var/log/sparky-ad-steps.log
+menustep4
+}
+### end of step 3 ###
 
-### step 6: samba ###
+### step 4: samba ################################################################
+menustep4 ()
+{
 
 ## Stop all samba related services
 systemctl stop smbd
@@ -779,7 +918,7 @@ echo "        browseable = No" | tee -a /etc/samba/smb.conf
 # Add home directories, default share and enable auto creation of user directories uppon logon using /etc/skel model
 echo " " | tee -a /etc/samba/smb.conf
 echo "[homes]" | tee -a /etc/samba/smb.conf
-echo "		  root preexec = mkdir -p -m 0700 /home/$SMBROOT/UserFiles/%U && chown %U:"Domain Admins" /home/$SMBROOT/UserFiles/%U'
+echo "		  root preexec = mkdir -p -m 0700 /home/$SMBROOT/UserFiles/%U && chown %U:"Domain Admins" /home/$SMBROOT/UserFiles/%U"
 echo "        comment = User Folder on Server" | tee -a /etc/samba/smb.conf
 echo "        path = /home/$SMBROOT/UserFiles/%U" | tee -a /etc/samba/smb.conf
 echo "        read only - No" | tee -a /etc/samba/smb.conf
@@ -997,11 +1136,16 @@ smbcontrol all reload-config
 #postconf -e "myorigin = $MYDOMAINNAME"
 #postconf -e "myhostname=$MYFQDN"
 
-echo "STEP6=finished..." >> /var/log/sparky-ad-server.log
+echo "STEP4=finished..." >> /var/log/sparky-ad-server.log
 
-### end of step 6 ###
+echo "4" >> /var/log/sparky-ad-steps.log
+menustep5
+}
+### end of step 4 ###
 
-### step 7: clamav ###
+### step 5: clamav #################################################################
+menustep5 ()
+{
 
 ## install clamav, if desired ##
 # question the install nedded
@@ -1013,14 +1157,19 @@ if [ "$?" = "0" ]; then
 	freshclam
 	service clamav-daemon restart
 	service clamav-freshclam restart
-	echo "STEP7=ClamAv installed" >> /var/log/sparky-ad-server.log
+	echo "STEP5=ClamAv installed" >> /var/log/sparky-ad-server.log
 else
-	echo "STEP7=ClamAv not installed" >> /var/log/sparky-ad-server.log
+	echo "STEP5=ClamAv not installed" >> /var/log/sparky-ad-server.log
 fi
 
-### end of step 7 ###
+echo "5" >> /var/log/sparky-ad-steps.log
+menustep6
+}
+### end of step 5 ###
 
-### step 2: enable UPS support ###
+### step 6: enable UPS support ####################################################
+menustep6 ()
+{
 
 # enable support to UPS via nut
 $DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL111" $HEIGHT $WIDTH
@@ -1028,57 +1177,85 @@ if [ "$?" = "0" ]; then
 	apt-get install nut nut-client -y
 	systemctl enable nut-monitor.service
 	echo "UPS support installed"
-	echo "STEP2=UPS support installed" >> /var/log/sparky-ad-server.log
+	echo "STEP6=UPS support installed" >> /var/log/sparky-ad-server.log
 else
 	systemctl disable nut-monitor.service
 	echo "UPS support not installed"
-	echo "STEP2=UPS support not installed" >> /var/log/sparky-ad-server.log
+	echo "STEP6=UPS support not installed" >> /var/log/sparky-ad-server.log
 fi
 
-### end of step 2 ###
+echo "6" >> /var/log/sparky-ad-steps.log
+menustep7
+}
+### end of step 6 ###
 
-### step 8: netdata ###
+### step 7: netdata ##############################################################
+menustep7 ()
+{
 
 ## install netdata, if desired ##
 # question the install nedded
 $DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL138" $HEIGHT $WIDTH
 if [ "$?" = "0" ]; then
 	apt-get install fonts-font-awesome fping freeipmi-common libfreeipmi17 libipmimonitoring6 libjs-bootstrap netdata netdata-data -y
-	echo "STEP8=netdata monitoring installed" >> /var/log/sparky-ad-server.log
+	echo "STEP7=netdata monitoring installed" >> /var/log/sparky-ad-server.log
 else
-	echo "STEP8=netdata monitoring not installed" >> /var/log/sparky-ad-server.log
+	echo "STEP7=netdata monitoring not installed" >> /var/log/sparky-ad-server.log
 fi
 
-### end of step 8 ###
+echo "7" >> /var/log/sparky-ad-steps.log
+menustep8
+}
+### end of step 7 ###
 
-
-### step 9: webmin ###
+### step 8: webmin ####################################################################
+menustep8 ()
+{
 
 ## install webmin, if desired ##
 # question the install nedded
 $DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL139" $HEIGHT $WIDTH
 if [ "$?" = "0" ]; then
 	apt-get install strongswan-starter webmin libauthen-libwrap-perl -y
-	echo "STEP9=WebMin manager installed" >> /var/log/sparky-ad-server.log
+	echo "STEP8=WebMin manager installed" >> /var/log/sparky-ad-server.log
 else
-	echo "STEP9=WebMin manager not installed" >> /var/log/sparky-ad-server.log
+	echo "STEP8=WebMin manager not installed" >> /var/log/sparky-ad-server.log
 fi
 
-### end of step 9 ###
+echo "8" >> /var/log/sparky-ad-steps.log
+menustep9
+}
+### end of step 8 ###
 
-### step 3: install beep support via sparky-beep ###
+### step 9: install beep support via sparky-beep #####################################
+menustep9 ()
+{
 
 $DIALOG $TITLE"$TITLETEXT" $YESNO "$LOCAL118" $HEIGHT $WIDTH
 if [ "$?" = "0" ]; then
 	apt-get install sparky-beep -y
-	echo "STEP3=Beep support installed"
-	echo "STEP3=Beep support installed" >> /var/log/sparky-ad-server.log
+	echo "STEP9=Beep support installed"
+	echo "STEP9=Beep support installed" >> /var/log/sparky-ad-server.log
 else
-	echo "STEP3=Beep support not installed"
-	echo "STEP3=Beep support not installed" >> /var/log/sparky-ad-server.log
+	echo "STEP9=Beep support not installed"
+	echo "STEP9=Beep support not installed" >> /var/log/sparky-ad-server.log
 fi
 
-### end of step 3 ###
+echo "9" >> /var/log/sparky-ad-steps.log
 
 echo "End of AD Server Installer log" >> /var/log/sparky-ad-server.log
 echo "==============================================================" >> /var/log/sparky-ad-server.log
+exit 1
+}
+### end of step 9 ###
+
+mainmenu
+menustep1
+menustep2
+menustep3
+menustep4
+menustep5
+menustep6
+menustep7
+menustep8
+menustep9

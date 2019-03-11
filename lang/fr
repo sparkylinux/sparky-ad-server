@@ -2,7 +2,7 @@
 # Copyright 2016 hiver <hiver@club-internet.fr> 2018/11/12
 # Sous licence GNU GPL v2
 # Dernière mise à jour 2018/11/12
-# Last update 2019/03/07 by pavroo
+# Last update 2019/03/11 by pavroo
 LOCAL1="Le test de connexion à internet a échoué!"
 LOCAL2="L'installation en ligne de l'application ne peut être faite!"
 LOCAL3="Sortie à présent..."
@@ -10,6 +10,10 @@ LOCAL4="La configuration du serveur est ciblé exclusivement sur la version stab
 LOCAL5="This is Sparky Active Directory post-install script which will install and set all you need to run AD Server."
 LOCAL6="Continue?"
 LOCAL7="Sparky Server Installer"
+LOCAL8="You haven't finished Sparky Server configuration before.\nWould you like to continue configuration from the point you stopped or start from the beginning?"
+LOCAL9="Start from the beginning"
+LOCAL10="Continue from point you stoped before"
+LOCAL11="You finished Sparky Server configuration already.\nWould you like to start it again from the beginning?"
 #
 LOCAL106="Would you like to use the already configured domain name?"
 LOCAL107="Enter le TLD name désiré; example: host.lan.>> intranet << ; If you do not enter any name, the default name intranet will be used."

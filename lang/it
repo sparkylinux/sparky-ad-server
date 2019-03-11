@@ -2,7 +2,7 @@
 # Copyright 2018 Carlo Ttroiani <abbassolafrangetta@gmail.com> 2018/11/22
 # Rilasciato sotto licenza GNU GPL v2
 # Ultimo aggiornamento: 2018/11/23 by Carlo
-# Last update 2019/03/07 by pavroo
+# Last update 2019/03/11 by pavroo
 LOCAL1="Test della connessione internet fallito!"
 LOCAL2="L'installazione on-line di un'applicazione server NON puo' essere fatta!"
 LOCAL3="Sto uscendo..."
@@ -10,6 +10,10 @@ LOCAL4="La configurazione del server e' impostata solamente sulla Debian/Sparky 
 LOCAL5="This is Sparky Active Directory post-install script which will install and set all you need to run AD Server."
 LOCAL6="Continue?"
 LOCAL7="Sparky Server Installer"
+LOCAL8="You haven't finished Sparky Server configuration before.\nWould you like to continue configuration from the point you stopped or start from the beginning?"
+LOCAL9="Start from the beginning"
+LOCAL10="Continue from point you stoped before"
+LOCAL11="You finished Sparky Server configuration already.\nWould you like to start it again from the beginning?"
 #
 LOCAL106="Would you like to use the already configured domain name?"
 LOCAL107="Enter the desired TLD name; hint: host.lan.>> intranet << ; If you do not enter any name, the default name intranet will be used."
