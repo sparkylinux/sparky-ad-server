@@ -1,18 +1,23 @@
 # Polish localization file for Sparky AD Server.
 # Copyright 2018 Paweł "pavroo" Pijanowski <pavroo@onet.eu> 2018/10/28
 # Under the GNU GPL v2
-# Last update 2019/03/11 by pavroo
+# Last update 2019/03/14 by Daniel
+#
+# INFO FOR TRANSLATORS : When you find "\n" means a breakline into the dialog box, so text appear next line
+#                           If you feel the text will look better "cutted" here or there for your language
+#                           This can be used or changed from the original place. Thanks!
+#
 LOCAL1="Połączenie z internetem nieudane!"
 LOCAL2="Instalacja on-line aplikacji serwerowych nie może być przeprowadzona!"
 LOCAL3="Kończenie..."
 LOCAL4="Konfiguracja serwera jest przeznaczona tylko dla stabilnej linii Debian/Sparky."
 LOCAL5="To jest Sparky Active Directory skrypt poinstalacyjny, który zainstaluje i ustawi wszystko co potrzebujesz do uruchomienia serwera AD."
 LOCAL6="Kontynuować?"
-LOCAL7="Sparky Server Instalator"
-LOCAL8="Nie skończyłeś konfiguracji Sparky Server ostatnim razem.\nCzy chcesz kontynuować z miejsca, w którym ostatnio skończyłeś czy zacząć od początku?"
+LOCAL7="Sparky AD Server Instalator"
+LOCAL8="Nie skończyłeś konfiguracji Sparky AD Server ostatnim razem.\nCzy chcesz kontynuować z miejsca, w którym ostatnio skończyłeś czy zacząć od początku?"
 LOCAL9="Zacznij od początku"
 LOCAL10="Kontynuuj z miejsca w którym skończyłeś"
-LOCAL11="Konfiguracja Sparky Server została już ukończona.\nCzy chcesz zacząć jeszcze raz od początku?"
+LOCAL11="Konfiguracja Sparky AD Server została już ukończona.\nCzy chcesz zacząć jeszcze raz od początku?"
 #
 LOCAL106="Czy chcesz użyć już skonfigurowanej nazwy domeny?"
 LOCAL107="Wpisz nazwę TLD; podpowiedź: host.lan.>> intranet << ; Jeśli nie wpiszesz żadnej nazwy, zostanie domyślnie użyta nazwa intranet."
@@ -33,7 +38,7 @@ LOCAL121="Podaj wymagane hasło dla konta administratora samba, proszę mieć na
 LOCAL122="Podaj wymagane hasło dla konta administratora samba ponownie."
 LOCAL123="Hasła nie są jednakowe. Spróbuj ponownie."
 LOCAL124="Wpisz przynajmniej jeden serwer DNS, który będzie używany poza domeną; możesz użyć więcej niż jeden oddzielony spacją (konfiguracja dla zapory ogniowej, bramy dostępu lub google 8.8.8.8)."
-LOCAL125="Jeśli nie wpiszesz żadnego adresu DNS, zostanie domyślnie użyty 8.8.8.8"
+LOCAL125="Jeśli nie wpiszesz żadnego adresu DNS, zostanie domyślnie użyty 8.8.8.8 2001:4860:4860::8888 (google)"
 LOCAL126="Wpisz wymaganą nazwę strony (bez znaków specjalnych); podpowiedź: może być nazwa miasta."
 LOCAL127="Jeśli nie wpiszesz żadnej nazwy, nazwa London zostanie domyślnie użyta."
 LOCAL128="Czy chcesz udostępnić foldery na tym serwerze?\nW następnym oknie bedziesz mógł skonfigurować ścieżkę folder do udostępnienia. Udział zostanie utworzony, jeśli jeszcze nie istnieje.\nNIE używaj nazwy administratora samba, którą już utworzyłeś."
@@ -45,7 +50,7 @@ LOCAL133="Nazwa udostępnianego folderu jest pusta, spróbuj ponownie."
 LOCAL134="Czy chcesz udostępnieć kolejny folder na tym serwerze?\nW następnym oknie bedziesz mógł skonfigurować ścieżkę folder do udostępnienia. Udział zostanie utworzony, jeśli jeszcze nie istnieje.\nNIE używaj nazwy administratora samba, którą już utworzyłeś oraz nie nazwy foldery, który już udostępniłeś."
 LOCAL135="Wpisz nazwę folderu, który udostępniasz. Jeśli nie wpiszesz żadnej nazwy, zostanie użyta nazwa sparkydir.XXXX"
 LOCAL136="Wymagany zestaw pakietów o przeznaczeniu serwerowym NIE ZOSTAŁ zainstalowany!"
-LOCAL137="Czy chcesz zainstalować i zaktualizować program anywirusowy Clamav? (zalecane, lecz niewymagane)"
-LOCAL138="Czy chcesz zainstalować netdata do monitorowania interfejsu sieciowego? (zalecane, lecz niewymagane)"
-LOCAL139="Czy chcesz zainstalować webmin do zarządzania serwerem? (zalecany jako domyślny interfejs zarządzania, odpowiedz nie, jeśli wiesz, co robisz.)"
+LOCAL137="Czy chcesz zainstalować i zaktualizować program anywirusowy Clamav? \n(zalecane, lecz niewymagane)"
+LOCAL138="Czy chcesz zainstalować netdata do monitorowania interfejsu sieciowego? \n(zalecane, lecz niewymagane)"
+LOCAL139="Czy chcesz zainstalować webmin do zarządzania serwerem? \n(zalecany jako domyślny interfejs zarządzania, odpowiedz nie, jeśli wiesz, co robisz.)"
 LOCAL140="Wybierz tak, aby wybrać istniejący folder lub nie, aby utworzyć nowy"
