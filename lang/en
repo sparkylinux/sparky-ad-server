@@ -1,7 +1,7 @@
 # English localization file for Sparky Backup Server.
 # Copyright 2018 Paweł "pavroo" Pijanowski <pavroo@onet.eu> 2018/09/26
 # Under the GNU GPL v2
-# Last update 2019/03/14 by Daniel
+# Last update 2019/03/17 by pavroo
 #
 # INFO FOR TRANSLATORS : When you find "\n" means a breakline into the dialog box, so text appear next line
 #                           If you feel the text will look better "cutted" here or there for your language
@@ -20,8 +20,8 @@ LOCAL10="Continue from point install stoped before"
 LOCAL11="You finished Sparky AD Server configuration already.\nWould you like to start it again from the beginning? \n (WARNING THIS WILL ERASE ANY CONFIGURATION PREVIOUSLY DONE!!)"
 #
 LOCAL106="Would you like to use the already configured domain name?"
-LOCAL107="Enter the desired TLD name, use an invalid one other than .local or .internal;  \n15No spaces, dots or special characters;\nhint: host.lan.>> intranet << ; If you do not enter any name, the default name intranet will be used."
-LOCAL108="Enter the desired server name;\nThis will be this machine name on network; \n15No spaces, dots or special characters; \nhint: >> host <<.lan.intranet ; If you do not enter any name, the default name server will be used."
+LOCAL107="Enter the desired TLD name, use an invalid one other than .local or .internal;  \n15 characters maximum, no spaces, dots or special characters;\nhint: host.lan.>> intranet << ; If you do not enter any name, the default name intranet will be used."
+LOCAL108="Enter the desired server name;\nThis will be this machine name on network; \n15 characters maximum, no spaces, dots or special characters; \nhint: >> host <<.lan.intranet ; If you do not enter any name, the default name server will be used."
 LOCAL109="Is there more than one network card or port to be bonded?"
 LOCAL110="This package is not available for your system version."
 LOCAL111="Do you want to install support for an uninterruptible power supply (UPS,No-Break)?"
