@@ -8,6 +8,10 @@ File: sparky-server-installer
     Copyright (C) 2018 Daniel Campos Ramos
     License: GPL-2
 
+File: el
+    Copyright (C) 2019 jidan
+    License: GPL-2
+
 File: fr
     Copyright (C) 2018 hiver <hiver@club-internet.fr>
     License: GPL-2
@@ -17,7 +21,7 @@ File: hu
     License: GNU GPL-3
 
 File: it
-    Copyright (C) 2018 Carlo Ttroiani <abbassolafrangetta@gmail.com>
+    Copyright (C) 2018 Carlo Troiani <abbassolafrangetta@gmail.com>
     License: GPL-2
 
 File: pt_BR

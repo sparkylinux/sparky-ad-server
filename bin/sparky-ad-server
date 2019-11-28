@@ -6,7 +6,7 @@
 #
 # script deps: apt, bash, coreutils, dpkg, dialog, gawk, grep, hostname, nano, iputils-ping, sed, sparky-ntp-server
 #
-# Last update 2019/10/19 by pavroo
+# Last update 2019/11/28 by pavroo
 
 # checking to make sure the script is running with root privileges
 TESTROOT=`whoami`
@@ -36,7 +36,9 @@ fi
 
 # get default's locale file
 DEFLOCDIR="/usr/share/sparky/sparky-ad-server"
-if [ "`cat /etc/default/locale | grep fr`" != "" ]; then
+if [ "`cat /etc/default/locale | grep el`" != "" ]; then
+	export LOCAPT=el && . $DEFLOCDIR/el
+elif [ "`cat /etc/default/locale | grep fr`" != "" ]; then
 	export LOCAPT=fr && . $DEFLOCDIR/fr
 elif [ "`cat /etc/default/locale | grep hu`" != "" ]; then
 	export LOCAPT=hu && . $DEFLOCDIR/hu
